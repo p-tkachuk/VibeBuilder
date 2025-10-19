@@ -12,17 +12,17 @@ interface ClickHandlerProps {
   isPositionInResourceField: (x: number, y: number, resourceType?: ResourceType) => boolean;
 }
 
-export const ClickHandler: React.FC<ClickHandlerProps> = ({ 
-  selectedBuildingType, 
-  onBuildingPlaced, 
+export const ClickHandler: React.FC<ClickHandlerProps> = ({
+  selectedBuildingType,
+  onBuildingPlaced,
   resourceFields,
-  isPositionInResourceField 
+  isPositionInResourceField
 }) => {
   const { screenToFlowPosition } = useReactFlow();
   const [transform] = useStore((state: any) => [state.transform]); // [x, y, zoom]
 
   // Track mouse position
-  const [mousePos, setMousePos] = React.useState<{x: number, y: number} | null>(null);
+  const [mousePos, setMousePos] = React.useState<{ x: number, y: number } | null>(null);
 
   // Mouse move handler for preview
   const handleMouseMove = (event: React.MouseEvent) => {
@@ -43,7 +43,7 @@ export const ClickHandler: React.FC<ClickHandlerProps> = ({
 
     const config = BUILDING_CONFIGS[selectedBuildingType];
     const newNodeId = `building-${Date.now()}`;
-    
+
     // Convert screen coordinates to React Flow coordinates
     let position = screenToFlowPosition({
       x: event.clientX,
@@ -53,23 +53,30 @@ export const ClickHandler: React.FC<ClickHandlerProps> = ({
     const gridSize = 40;
     position.x = Math.round(position.x / gridSize) * gridSize;
     position.y = Math.round(position.y / gridSize) * gridSize;
-    
+
+    // Offset position to center the building (approximate building size: 120px wide, 80px tall)
+    const buildingWidth = 120;
+    const buildingHeight = 80;
+    position.x = position.x - buildingWidth / 2;
+    position.y = position.y - buildingHeight / 2;
+
     // Validate placement based on building type
     let canPlace = true;
     let errorMessage = '';
-    
+
     if (selectedBuildingType === BuildingType.MINER) {
-      if (!isPositionInResourceField(position.x, position.y, ResourceType.IRON_ORE)) {
+      // Check center of building for resource field validation
+      if (!isPositionInResourceField(position.x + buildingWidth / 2, position.y + buildingHeight / 2, ResourceType.IRON_ORE)) {
         canPlace = false;
         errorMessage = 'Miners can only be placed on iron ore fields!';
       }
     }
-    
+
     if (!canPlace) {
       alert(errorMessage);
       return;
     }
-    
+
     const newNode: Node = {
       id: newNodeId,
       type: 'building',
@@ -110,15 +117,15 @@ export const ClickHandler: React.FC<ClickHandlerProps> = ({
         onMouseLeave={handleMouseLeave}
       />
       {/* Render ghost building preview (at correct screen coords under zoom/pan) */}
-      {selectedBuildingType && mousePos && (
+      {selectedBuildingType && mousePos && ghostScreen && transform && (
         <div
           style={{
             position: 'absolute',
-            left: ghostScreen?.left,
-            top: ghostScreen?.top,
+            left: ghostScreen.left,
+            top: ghostScreen.top,
             pointerEvents: 'none',
             opacity: 0.45,
-            transform: 'translate(-50%, -50%)',
+            transform: `translate(-50%, -50%) scale(${transform[2]})`,
             zIndex: 100
           }}
         >
