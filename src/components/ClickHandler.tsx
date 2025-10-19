@@ -26,10 +26,14 @@ export const ClickHandler: React.FC<ClickHandlerProps> = ({
     const newNodeId = `building-${Date.now()}`;
     
     // Convert screen coordinates to React Flow coordinates
-    const position = screenToFlowPosition({
+    let position = screenToFlowPosition({
       x: event.clientX,
       y: event.clientY,
     });
+    // Snap to grid (40px)
+    const gridSize = 40;
+    position.x = Math.round(position.x / gridSize) * gridSize;
+    position.y = Math.round(position.y / gridSize) * gridSize;
     
     // Validate placement based on building type
     let canPlace = true;
