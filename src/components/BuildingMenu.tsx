@@ -3,9 +3,10 @@ import { BuildingType, BUILDING_CONFIGS } from '../types/buildings';
 
 interface BuildingMenuProps {
   onBuildingSelect: (buildingType: BuildingType) => void;
+  selectedBuildingType: BuildingType | null;
 }
 
-export const BuildingMenu: React.FC<BuildingMenuProps> = ({ onBuildingSelect }) => {
+export const BuildingMenu: React.FC<BuildingMenuProps> = ({ onBuildingSelect, selectedBuildingType }) => {
   const buildingTypes = Object.values(BuildingType);
 
   return (
@@ -31,8 +32,25 @@ export const BuildingMenu: React.FC<BuildingMenuProps> = ({ onBuildingSelect }) 
         Building Menu
       </h3>
       
+      {selectedBuildingType && (
+        <div style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.1)',
+          padding: '8px',
+          borderRadius: '4px',
+          marginBottom: '8px',
+          fontSize: '12px',
+          color: 'white'
+        }}>
+          <strong>Selected:</strong> {BUILDING_CONFIGS[selectedBuildingType].name}
+          <br />
+          <em>Click on the map to place</em>
+        </div>
+      )}
+      
       {buildingTypes.map((buildingType) => {
         const config = BUILDING_CONFIGS[buildingType];
+        const isSelected = selectedBuildingType === buildingType;
+        
         return (
           <button
             key={buildingType}
@@ -42,9 +60,9 @@ export const BuildingMenu: React.FC<BuildingMenuProps> = ({ onBuildingSelect }) 
               alignItems: 'center',
               gap: '8px',
               padding: '12px',
-              backgroundColor: config.color,
+              backgroundColor: isSelected ? '#4CAF50' : config.color,
               color: 'white',
-              border: 'none',
+              border: isSelected ? '2px solid #81C784' : 'none',
               borderRadius: '6px',
               cursor: 'pointer',
               fontSize: '14px',
@@ -53,12 +71,16 @@ export const BuildingMenu: React.FC<BuildingMenuProps> = ({ onBuildingSelect }) 
               textAlign: 'left'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.05)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+              if (!isSelected) {
+                e.currentTarget.style.transform = 'scale(1.05)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+              }
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.boxShadow = 'none';
+              if (!isSelected) {
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.boxShadow = 'none';
+              }
             }}
           >
             <span style={{ fontSize: '18px' }}>{config.icon}</span>

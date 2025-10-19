@@ -5,7 +5,8 @@ import { BuildingMenu } from './components/BuildingMenu';
 import { BuildingNode } from './components/BuildingNode';
 import { ResourceNode } from './components/ResourceNode';
 import { TerrainOverlay } from './components/TerrainOverlay';
-import { BuildingType, BUILDING_CONFIGS } from './types/buildings';
+import { ClickHandler } from './components/ClickHandler';
+import { BuildingType } from './types/buildings';
 import type { ResourceField } from './types/terrain';
 import { ResourceType } from './types/terrain';
 
@@ -81,8 +82,8 @@ const generateResourceFields = (): ResourceField[] => {
 export default function App() {
   const [nodes, setNodes] = useState(initialNodes);
   const [edges, setEdges] = useState(initialEdges);
-  const [nodeIdCounter, setNodeIdCounter] = useState(1);
   const [resourceFields] = useState<ResourceField[]>(generateResourceFields());
+  const [selectedBuildingType, setSelectedBuildingType] = useState<BuildingType | null>(null);
   
   // Convert resource fields to React Flow nodes for proper positioning
   const resourceNodes: Node[] = useMemo(() => {
@@ -132,51 +133,22 @@ export default function App() {
   }, [resourceFields]);
 
   const handleBuildingSelect = useCallback((buildingType: BuildingType) => {
-    const config = BUILDING_CONFIGS[buildingType];
-    const newNodeId = `building-${nodeIdCounter}`;
-    
-    // Generate random position
-    let position = { 
-      x: Math.random() * 800 + 100, 
-      y: Math.random() * 500 + 100 
-    };
-    
-    // For miners, ensure they're placed on ore fields
-    if (buildingType === BuildingType.MINER) {
-      let attempts = 0;
-      while (!isPositionInResourceField(position.x, position.y, ResourceType.IRON_ORE) && attempts < 50) {
-        position = { 
-          x: Math.random() * 800 + 100, 
-          y: Math.random() * 500 + 100 
-        };
-        attempts++;
-      }
-      
-      // If we couldn't find a valid position after 50 attempts, place it anyway
-      if (attempts >= 50) {
-        console.warn('Could not find valid ore field position for miner');
-      }
-    }
-    
-    const newNode: Node = {
-      id: newNodeId,
-      type: 'building',
-      position,
-      data: {
-        buildingType,
-        label: config.name,
-      },
-    };
+    setSelectedBuildingType(buildingType);
+  }, []);
 
+  const handleBuildingPlaced = useCallback((newNode: Node) => {
     setNodes((nds) => [...nds, newNode]);
-    setNodeIdCounter((counter) => counter + 1);
-  }, [nodeIdCounter, isPositionInResourceField]);
+    setSelectedBuildingType(null); // Clear selection after placement
+  }, []);
 
   const allNodes = useMemo(() => [...resourceNodes, ...nodes], [resourceNodes, nodes]);
 
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
-      <BuildingMenu onBuildingSelect={handleBuildingSelect} />
+      <BuildingMenu 
+        onBuildingSelect={handleBuildingSelect} 
+        selectedBuildingType={selectedBuildingType}
+      />
       <ReactFlow
         nodes={allNodes}
         edges={edges}
@@ -188,6 +160,12 @@ export default function App() {
         style={{ backgroundColor: '#2d5016' }}
       >
         <TerrainOverlay />
+        <ClickHandler
+          selectedBuildingType={selectedBuildingType}
+          onBuildingPlaced={handleBuildingPlaced}
+          resourceFields={resourceFields}
+          isPositionInResourceField={isPositionInResourceField}
+        />
       </ReactFlow>
     </div>
   );
