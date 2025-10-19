@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { ReactFlow, applyNodeChanges, applyEdgeChanges, addEdge, type Node, type Edge } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { BuildingMenu } from './components/BuildingMenu';
@@ -85,24 +85,33 @@ export default function App() {
   const [resourceFields] = useState<ResourceField[]>(generateResourceFields());
   
   // Convert resource fields to React Flow nodes for proper positioning
-  const resourceNodes: Node[] = resourceFields.map((field) => ({
-    id: field.id,
-    type: 'resource',
-    position: { x: field.x, y: field.y },
-    data: {
-      resourceType: field.type,
-      width: field.width,
-      height: field.height,
-      intensity: field.intensity
-    },
-    draggable: false,
-    selectable: false,
-    deletable: false
-  }));
+  const resourceNodes: Node[] = useMemo(() => {
+    return resourceFields.map((field) => ({
+      id: field.id,
+      type: 'resource',
+      position: { x: field.x, y: field.y },
+      data: {
+        resourceType: field.type,
+        width: field.width,
+        height: field.height,
+        intensity: field.intensity
+      },
+      draggable: false,
+      selectable: false,
+      deletable: false
+    }));
+  }, [resourceFields]);
 
   const onNodesChange = useCallback(
-    (changes: any) => setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot)),
-    [],
+    (changes: any) => {
+      // Filter out changes to resource nodes since they shouldn't be modified
+      const filteredChanges = changes.filter((change: any) => {
+        const nodeId = change.id;
+        return !resourceFields.some(field => field.id === nodeId);
+      });
+      setNodes((nodesSnapshot) => applyNodeChanges(filteredChanges, nodesSnapshot));
+    },
+    [resourceFields],
   );
   const onEdgesChange = useCallback(
     (changes: any) => setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot)),
@@ -163,11 +172,13 @@ export default function App() {
     setNodeIdCounter((counter) => counter + 1);
   }, [nodeIdCounter, isPositionInResourceField]);
 
+  const allNodes = useMemo(() => [...resourceNodes, ...nodes], [resourceNodes, nodes]);
+
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
       <BuildingMenu onBuildingSelect={handleBuildingSelect} />
       <ReactFlow
-        nodes={[...resourceNodes, ...nodes]}
+        nodes={allNodes}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}

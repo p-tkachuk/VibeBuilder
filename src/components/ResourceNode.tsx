@@ -19,7 +19,7 @@ export const ResourceNode: React.FC<ResourceNodeProps> = ({ data }) => {
         width: data.width,
         height: data.height,
         backgroundColor: RESOURCE_COLORS[data.resourceType],
-        opacity: 0.4 + (data.intensity * 0.4),
+        opacity: 0.8,
         borderRadius: '8px',
         border: `2px solid ${RESOURCE_COLORS[data.resourceType]}`,
         display: 'flex',
@@ -29,7 +29,8 @@ export const ResourceNode: React.FC<ResourceNodeProps> = ({ data }) => {
         fontWeight: 'bold',
         textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
         boxShadow: 'inset 0 0 20px rgba(0,0,0,0.3)',
-        pointerEvents: 'none'
+        pointerEvents: 'none',
+        zIndex: 0
       }}
     >
       {RESOURCE_PATTERNS[data.resourceType]}
