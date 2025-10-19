@@ -9,9 +9,10 @@ export interface BuildingNodeData {
 
 interface BuildingNodeProps {
   data: BuildingNodeData;
+  ghost?: boolean;
 }
 
-export const BuildingNode: React.FC<BuildingNodeProps> = ({ data }) => {
+export const BuildingNode: React.FC<BuildingNodeProps> = ({ data, ghost }) => {
   const config = BUILDING_CONFIGS[data.buildingType];
   
   return (
@@ -26,7 +27,10 @@ export const BuildingNode: React.FC<BuildingNodeProps> = ({ data }) => {
         fontSize: '12px',
         fontWeight: 'bold',
         boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-        border: '2px solid rgba(255, 255, 255, 0.3)'
+        border: ghost ? '2px dashed rgba(255,255,255,0.8)' : '2px solid rgba(255,255,255,0.3)',
+        opacity: ghost ? 0.7 : 1,
+        pointerEvents: 'none',
+        filter: ghost ? 'blur(0.5px) grayscale(0.3)' : undefined
       }}
     >
       <div style={{ fontSize: '20px', marginBottom: '4px' }}>
@@ -35,7 +39,7 @@ export const BuildingNode: React.FC<BuildingNodeProps> = ({ data }) => {
       <div>{data.label}</div>
       
       {/* Input handles */}
-      {config.inputs.length > 0 && (
+      {config.inputs.length > 0 && !ghost && (
         <Handle
           type="target"
           position={Position.Left}
@@ -44,7 +48,7 @@ export const BuildingNode: React.FC<BuildingNodeProps> = ({ data }) => {
       )}
       
       {/* Output handles */}
-      {config.outputs.length > 0 && config.outputs.map((_, index) => {
+      {config.outputs.length > 0 && !ghost && config.outputs.map((_, index) => {
         if (config.outputs.length === 1) {
           return (
             <Handle

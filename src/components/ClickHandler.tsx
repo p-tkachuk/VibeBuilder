@@ -1,8 +1,9 @@
 import React from 'react';
-import { useReactFlow, type Node } from '@xyflow/react';
+import { useReactFlow, type Node, useStore } from '@xyflow/react';
 import { BuildingType, BUILDING_CONFIGS } from '../types/buildings';
 import type { ResourceField } from '../types/terrain';
 import { ResourceType } from '../types/terrain';
+import { BuildingNode } from './BuildingNode';
 
 interface ClickHandlerProps {
   selectedBuildingType: BuildingType | null;
@@ -18,6 +19,24 @@ export const ClickHandler: React.FC<ClickHandlerProps> = ({
   isPositionInResourceField 
 }) => {
   const { screenToFlowPosition } = useReactFlow();
+  const [transform] = useStore((state: any) => [state.transform]); // [x, y, zoom]
+
+  // Track mouse position
+  const [mousePos, setMousePos] = React.useState<{x: number, y: number} | null>(null);
+
+  // Mouse move handler for preview
+  const handleMouseMove = (event: React.MouseEvent) => {
+    if (!selectedBuildingType) return;
+    let flowPos = screenToFlowPosition({ x: event.clientX, y: event.clientY });
+    // Snap to grid
+    const gridSize = 40;
+    flowPos.x = Math.round(flowPos.x / gridSize) * gridSize;
+    flowPos.y = Math.round(flowPos.y / gridSize) * gridSize;
+    setMousePos(flowPos);
+  };
+
+  // Clear preview on leave
+  const handleMouseLeave = () => setMousePos(null);
 
   const handlePaneClick = React.useCallback((event: React.MouseEvent) => {
     if (!selectedBuildingType) return;
@@ -64,18 +83,48 @@ export const ClickHandler: React.FC<ClickHandlerProps> = ({
     onBuildingPlaced(newNode);
   }, [selectedBuildingType, screenToFlowPosition, onBuildingPlaced, isPositionInResourceField]);
 
+  // Compute ghost CSS coordinates (screen), respecting pan+zoom
+  let ghostScreen = null;
+  if (selectedBuildingType && mousePos && transform) {
+    const [tx, ty, zoom] = transform;
+    ghostScreen = {
+      left: mousePos.x * zoom + tx,
+      top: mousePos.y * zoom + ty
+    };
+  }
+
   return (
-    <div
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        pointerEvents: selectedBuildingType ? 'auto' : 'none',
-        zIndex: 10
-      }}
-      onClick={handlePaneClick}
-    />
+    <>
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          pointerEvents: selectedBuildingType ? 'auto' : 'none',
+          zIndex: 10
+        }}
+        onClick={handlePaneClick}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      />
+      {/* Render ghost building preview (at correct screen coords under zoom/pan) */}
+      {selectedBuildingType && mousePos && (
+        <div
+          style={{
+            position: 'absolute',
+            left: ghostScreen?.left,
+            top: ghostScreen?.top,
+            pointerEvents: 'none',
+            opacity: 0.45,
+            transform: 'translate(-50%, -50%)',
+            zIndex: 100
+          }}
+        >
+          <BuildingNode data={{ buildingType: selectedBuildingType, label: BUILDING_CONFIGS[selectedBuildingType].name }} ghost />
+        </div>
+      )}
+    </>
   );
 };
