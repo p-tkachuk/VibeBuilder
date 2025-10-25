@@ -9,6 +9,7 @@ export interface BuildingNodeData {
   label: string;
   id: string;
   edges: Edge[];
+  inventory?: Record<string, number>;
 }
 
 interface BuildingNodeProps {
@@ -71,6 +72,11 @@ export const BuildingNode: React.FC<BuildingNodeProps> = ({ data, ghost }) => {
     >
       <div className={styles.icon}>{config.icon}</div>
       <div>{data.label}</div>
+      {data.inventory && Object.keys(data.inventory).length > 0 && (
+        <div className={styles.inventory}>
+          {Object.entries(data.inventory).map(([key, value]) => `${key}: ${value}`).join(', ')}
+        </div>
+      )}
 
       {renderInputHandles()}
       {renderOutputHandles()}

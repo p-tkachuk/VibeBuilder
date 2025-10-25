@@ -58,3 +58,9 @@
     background-color: #ff0000;
     animation: pulse 1s infinite;
 }
+
+.inventory {
+    font-size: 10px;
+    margin-top: 4px;
+    word-break: break-word;
+}

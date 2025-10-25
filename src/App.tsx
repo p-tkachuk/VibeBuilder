@@ -16,6 +16,7 @@ import { GAME_CONFIG } from './config/game.config';
 import { snapToGrid, getBuildingCenter, doRectanglesOverlap } from './utils/position.utils';
 import { ResourceType } from './types/terrain';
 import { ResourceInventoryService } from './services/ResourceInventoryService';
+import { BuildingOperationService } from './services/BuildingOperationService';
 
 const initialNodes: Node[] = [
   {
@@ -67,6 +68,18 @@ export default function App() {
     ),
   ], [resourceNodes, nodes, edges]);
 
+  const totalResources = useMemo(() => {
+    const totals: Record<string, number> = { ...resourceInventory.getInventory() };
+    nodes.forEach(node => {
+      if (node.type === 'building' && node.data.inventory) {
+        Object.entries(node.data.inventory).forEach(([key, value]) => {
+          totals[key] = (totals[key] || 0) + value;
+        });
+      }
+    });
+    return totals;
+  }, [nodes, resourceInventory]);
+
   // Handle ESC key to cancel building placement
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -78,6 +91,14 @@ export default function App() {
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [selectedBuildingType, clearSelection]);
+
+  // Building operations ticker
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNodes((prevNodes) => BuildingOperationService.processBuildings(prevNodes, edges, resourceFields));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [edges, resourceFields]);
 
   const showToast = useCallback((message: string) => {
     setToastMessage(message);
@@ -185,7 +206,7 @@ export default function App() {
           />
         </div>
         <div style={{ pointerEvents: 'auto' }}>
-          <ResourcePanel resources={resourceInventory.getInventory()} storageCapacity={resourceInventory.getStorageCapacity()} />
+          <ResourcePanel resources={totalResources} storageCapacity={resourceInventory.getStorageCapacity()} />
         </div>
       </div>
       <div style={{ position: 'relative', height: '100vh' }}>

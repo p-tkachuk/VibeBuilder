@@ -128,6 +128,7 @@ export class BuildingPlacementService {
             data: {
                 buildingType,
                 label: config.name,
+                inventory: {},
             },
         };
     }
