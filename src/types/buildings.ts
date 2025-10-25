@@ -9,7 +9,10 @@ export interface Building {
 }
 
 export enum BuildingType {
-  MINER = 'miner',
+  COPPER_MINER = 'copper-miner',
+  COAL_MINER = 'coal-miner',
+  IRON_MINER = 'iron-miner',
+  STONE_MINER = 'stone-miner',
   SMELTER = 'smelter',
   ASSEMBLER = 'assembler',
   SPLITTER = 'splitter',
@@ -17,13 +20,37 @@ export enum BuildingType {
 }
 
 export const BUILDING_CONFIGS = {
-  [BuildingType.MINER]: {
-    name: 'Iron Ore Miner',
+  [BuildingType.COPPER_MINER]: {
+    name: 'Copper Miner',
+    description: 'Extracts copper ore from resource nodes',
+    color: '#B87333',
+    icon: '⛏️',
+    inputs: [],
+    outputs: ['copper-ore']
+  },
+  [BuildingType.COAL_MINER]: {
+    name: 'Coal Miner',
+    description: 'Extracts coal from resource nodes',
+    color: '#2F2F2F',
+    icon: '⛏️',
+    inputs: [],
+    outputs: ['coal']
+  },
+  [BuildingType.IRON_MINER]: {
+    name: 'Iron Miner',
     description: 'Extracts iron ore from resource nodes',
     color: '#8B4513',
     icon: '⛏️',
     inputs: [],
     outputs: ['iron-ore']
+  },
+  [BuildingType.STONE_MINER]: {
+    name: 'Stone Miner',
+    description: 'Extracts stone from resource nodes',
+    color: '#696969',
+    icon: '⛏️',
+    inputs: [],
+    outputs: ['stone']
   },
   [BuildingType.SMELTER]: {
     name: 'Iron Smelter',

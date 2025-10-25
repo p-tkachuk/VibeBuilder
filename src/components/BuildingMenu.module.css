@@ -63,3 +63,19 @@
     font-size: 12px;
     opacity: 0.9;
 }
+
+.submenu {
+    margin-left: 20px;
+    margin-top: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.subButton {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.subButton:hover:not(.selected) {
+    background-color: rgba(255, 255, 255, 0.1);
+}

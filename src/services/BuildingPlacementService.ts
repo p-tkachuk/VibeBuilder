@@ -69,11 +69,32 @@ export class BuildingPlacementService {
         }
 
         // Check if building requires specific resource field
-        if (buildingType === BuildingType.MINER) {
+        if (buildingType === BuildingType.COPPER_MINER) {
+            if (!isPositionInResourceField(snappedPosition, resourceFields, ResourceType.COPPER_ORE)) {
+                return {
+                    canPlace: false,
+                    errorMessage: 'Copper miners can only be placed on copper ore fields!',
+                };
+            }
+        } else if (buildingType === BuildingType.COAL_MINER) {
+            if (!isPositionInResourceField(snappedPosition, resourceFields, ResourceType.COAL)) {
+                return {
+                    canPlace: false,
+                    errorMessage: 'Coal miners can only be placed on coal fields!',
+                };
+            }
+        } else if (buildingType === BuildingType.IRON_MINER) {
             if (!isPositionInResourceField(snappedPosition, resourceFields, ResourceType.IRON_ORE)) {
                 return {
                     canPlace: false,
-                    errorMessage: 'Miners can only be placed on iron ore fields!',
+                    errorMessage: 'Iron miners can only be placed on iron ore fields!',
+                };
+            }
+        } else if (buildingType === BuildingType.STONE_MINER) {
+            if (!isPositionInResourceField(snappedPosition, resourceFields, ResourceType.STONE)) {
+                return {
+                    canPlace: false,
+                    errorMessage: 'Stone miners can only be placed on stone fields!',
                 };
             }
         }
