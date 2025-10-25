@@ -21,6 +21,12 @@ export enum BuildingType {
   STORAGE = 'storage'
 }
 
+export enum BuildingSpecialty {
+  MINER = 'copper-miner',
+  FACTORY = 'factory',
+  UTILITY = 'utility'
+}
+
 export const BUILDING_CONFIGS = {
   [BuildingType.COPPER_MINER]: {
     name: 'Copper Miner',
@@ -29,7 +35,8 @@ export const BUILDING_CONFIGS = {
     icon: '⛏️',
     inputs: {},
     outputs: { 'copper-ore': 2 },
-    cost: { stone: 5 }
+    cost: { stone: 5 },
+    specialty: BuildingSpecialty.MINER
   },
   [BuildingType.COAL_MINER]: {
     name: 'Coal Miner',
@@ -38,7 +45,8 @@ export const BUILDING_CONFIGS = {
     icon: '⛏️',
     inputs: {},
     outputs: { 'coal': 2 },
-    cost: { stone: 5 }
+    cost: { stone: 5 },
+    specialty: BuildingSpecialty.MINER
   },
   [BuildingType.IRON_MINER]: {
     name: 'Iron Miner',
@@ -47,7 +55,8 @@ export const BUILDING_CONFIGS = {
     icon: '⛏️',
     inputs: {},
     outputs: { 'iron-ore': 2 },
-    cost: { stone: 5 }
+    cost: { stone: 5 },
+    specialty: BuildingSpecialty.MINER
   },
   [BuildingType.STONE_MINER]: {
     name: 'Stone Miner',
@@ -56,7 +65,8 @@ export const BUILDING_CONFIGS = {
     icon: '⛏️',
     inputs: {},
     outputs: { stone: 2 },
-    cost: { stone: 5 }
+    cost: { stone: 5 },
+    specialty: BuildingSpecialty.MINER
   },
   [BuildingType.SMELTER]: {
     name: 'Iron Smelter',
@@ -65,7 +75,8 @@ export const BUILDING_CONFIGS = {
     icon: '🔥',
     inputs: { 'iron-ore': 2 },
     outputs: { 'iron-plate': 1 },
-    cost: { stone: 10, 'iron-ore': 5 }
+    cost: { stone: 10, 'iron-ore': 5 },
+    specialty: BuildingSpecialty.FACTORY
   },
   [BuildingType.ASSEMBLER]: {
     name: 'Iron Gear Assembler',
@@ -74,7 +85,8 @@ export const BUILDING_CONFIGS = {
     icon: '⚙️',
     inputs: { 'iron-plate': 2 },
     outputs: { 'iron-gear': 1 },
-    cost: { stone: 10, 'iron-plate': 10 }
+    cost: { stone: 10, 'iron-plate': 10 },
+    specialty: BuildingSpecialty.FACTORY
   },
   [BuildingType.SPLITTER]: {
     name: 'Item Splitter',
@@ -83,7 +95,8 @@ export const BUILDING_CONFIGS = {
     icon: '↔️',
     inputs: { 'any': 2 },
     outputs: { 'any-0': 1, 'any-1': 1 },
-    cost: { 'iron-plate': 5, 'copper-ore': 5 }
+    cost: { 'iron-plate': 5, 'copper-ore': 5 },
+    specialty: BuildingSpecialty.FACTORY
   },
   [BuildingType.STORAGE]: {
     name: 'Storage',
@@ -93,6 +106,7 @@ export const BUILDING_CONFIGS = {
     inputs: { 'any': undefined },
     outputs: { 'any': undefined },
     cost: { stone: 10 },
-    capacity: GAME_CONFIG.storageCapacity
+    capacity: GAME_CONFIG.storageCapacity,
+    specialty: BuildingSpecialty.UTILITY
   }
 };
