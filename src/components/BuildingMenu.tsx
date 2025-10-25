@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BuildingType, BUILDING_CONFIGS } from '../types/buildings';
 import { ResourceInventoryService } from '../services/ResourceInventoryService';
+import type { Node } from '@xyflow/react';
 import styles from './BuildingMenu.module.css';
 
 const MINER_TYPES = [
@@ -21,6 +22,7 @@ interface BuildingMenuProps {
   onBuildingSelect: (buildingType: BuildingType) => void;
   selectedBuildingType: BuildingType | null;
   resourceInventory: ResourceInventoryService;
+  nodes: Node[];
 }
 
 const renderBuildingButton = (
@@ -28,11 +30,12 @@ const renderBuildingButton = (
   onBuildingSelect: (buildingType: BuildingType) => void,
   selectedBuildingType: BuildingType | null,
   resourceInventory: ResourceInventoryService,
+  nodes: Node[],
   isSubButton = false
 ) => {
   const config = BUILDING_CONFIGS[buildingType];
   const isSelected = selectedBuildingType === buildingType;
-  const isAffordable = config.cost ? resourceInventory.hasResources(config.cost) : true;
+  const isAffordable = config.cost ? resourceInventory.hasResources(config.cost, nodes) : true;
   const costText = config.cost ? Object.entries(config.cost).map(([res, amt]) => `${res}: ${amt}`).join(', ') : 'Free';
 
   return (
@@ -61,6 +64,7 @@ export const BuildingMenu: React.FC<BuildingMenuProps> = ({
   onBuildingSelect,
   selectedBuildingType,
   resourceInventory,
+  nodes,
 }) => {
   const [minersExpanded, setMinersExpanded] = useState(false);
 
@@ -97,14 +101,14 @@ export const BuildingMenu: React.FC<BuildingMenuProps> = ({
       {minersExpanded && (
         <div className={styles.submenu}>
           {MINER_TYPES.map((buildingType) =>
-            renderBuildingButton(buildingType, onBuildingSelect, selectedBuildingType, resourceInventory, true)
+            renderBuildingButton(buildingType, onBuildingSelect, selectedBuildingType, resourceInventory, nodes, true)
           )}
         </div>
       )}
 
       {/* Other buildings */}
       {NON_MINER_BUILDINGS.map((buildingType) =>
-        renderBuildingButton(buildingType, onBuildingSelect, selectedBuildingType, resourceInventory)
+        renderBuildingButton(buildingType, onBuildingSelect, selectedBuildingType, resourceInventory, nodes)
       )}
     </div>
   );

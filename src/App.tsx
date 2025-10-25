@@ -143,6 +143,7 @@ export default function App() {
             onBuildingSelect={handleBuildingSelect}
             selectedBuildingType={selectedBuildingType}
             resourceInventory={resourceInventory}
+            nodes={allNodes}
           />
         </div>
         <div style={{ pointerEvents: 'auto' }}>
@@ -170,6 +171,7 @@ export default function App() {
           <BuildingPlacementHandler
             selectedBuildingType={selectedBuildingType}
             onBuildingPlaced={handleBuildingPlaced}
+            onNodesUpdate={setNodes}
             resourceFields={resourceFields}
             existingNodes={allNodes}
             onShowToast={showToast}

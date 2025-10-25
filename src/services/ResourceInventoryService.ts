@@ -1,3 +1,4 @@
+import type { Node } from '@xyflow/react';
 import { GAME_CONFIG } from '../config/game.config';
 
 /**
@@ -75,10 +76,35 @@ export class ResourceInventoryService {
 
     /**
      * Check if inventory has sufficient resources
+     * @param cost Cost object
+     * @param nodes Optional: if provided, checks total resources including building inventories
      */
-    hasResources(cost: Record<string, number>): boolean {
+    hasResources(cost: Record<string, number>, nodes?: Node[]): boolean {
+        if (nodes) {
+            return this.hasTotalResources(cost, nodes);
+        }
         return Object.entries(cost).every(([resource, amount]) => {
             return (this.inventory[resource] || 0) >= amount;
+        });
+    }
+
+    /**
+     * Check if total resources (main inventory + storage buildings) has sufficient resources
+     * @param cost Cost object
+     * @param nodes All building nodes to check storage inventories
+     */
+    hasTotalResources(cost: Record<string, number>, nodes: Node[]): boolean {
+        const total: Record<string, number> = { ...this.inventory };
+        nodes.forEach(node => {
+            if (node.type === 'building' && node.data.inventory) {
+                const inventory = node.data.inventory as Record<string, number>;
+                Object.entries(inventory).forEach(([resource, amount]) => {
+                    total[resource] = (total[resource] || 0) + (amount as number);
+                });
+            }
+        });
+        return Object.entries(cost).every(([resource, amount]) => {
+            return (total[resource] || 0) >= amount;
         });
     }
 
@@ -97,6 +123,53 @@ export class ResourceInventoryService {
         });
 
         return true;
+    }
+
+    /**
+     * Remove resources from total resources (main inventory + storage buildings)
+     * @param cost Resource cost object
+     * @param nodes All building nodes
+     * @returns Success status and updated nodes
+     */
+    removeTotalResources(cost: Record<string, number>, nodes: Node[]): { success: boolean; updatedNodes: Node[] } {
+        if (!this.hasTotalResources(cost, nodes)) {
+            return { success: false, updatedNodes: nodes };
+        }
+
+        const remainingCost = { ...cost };
+
+        // First deduct from main inventory
+        Object.keys(remainingCost).forEach(resource => {
+            const available = this.inventory[resource] || 0;
+            const needed = remainingCost[resource];
+            const deduct = Math.min(available, needed);
+            this.inventory[resource] = available - deduct;
+            remainingCost[resource] -= deduct;
+        });
+
+        // Then deduct from storage inventories
+        let updatedNodes = nodes.map(node => {
+            if (node.type === 'building' && node.data.inventory && Object.keys(remainingCost).some(res => remainingCost[res] > 0)) {
+                const newInv = { ...(node.data.inventory as Record<string, number>) };
+                Object.keys(remainingCost).forEach(resource => {
+                    if (remainingCost[resource] <= 0) return;
+                    const available = newInv[resource] || 0;
+                    const deduct = Math.min(available, remainingCost[resource]);
+                    newInv[resource] = available - deduct;
+                    remainingCost[resource] -= deduct;
+                });
+                return {
+                    ...node,
+                    data: {
+                        ...node.data,
+                        inventory: newInv
+                    }
+                };
+            }
+            return node;
+        });
+
+        return { success: true, updatedNodes };
     }
 
     /**

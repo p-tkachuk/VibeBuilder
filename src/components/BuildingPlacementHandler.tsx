@@ -17,6 +17,7 @@ import { ResourceInventoryService } from '../services/ResourceInventoryService';
 interface BuildingPlacementHandlerProps {
     selectedBuildingType: BuildingType | null;
     onBuildingPlaced: (node: Node) => void;
+    onNodesUpdate: (nodes: Node[]) => void;
     resourceFields: ResourceField[];
     existingNodes: Node[];
     onShowToast: (message: string) => void;
@@ -26,6 +27,7 @@ interface BuildingPlacementHandlerProps {
 export const BuildingPlacementHandler: React.FC<BuildingPlacementHandlerProps> = ({
     selectedBuildingType,
     onBuildingPlaced,
+    onNodesUpdate,
     resourceFields,
     existingNodes,
     onShowToast,
@@ -59,7 +61,7 @@ export const BuildingPlacementHandler: React.FC<BuildingPlacementHandlerProps> =
             if (!selectedBuildingType) return;
 
             const buildingConfig = BUILDING_CONFIGS[selectedBuildingType];
-            if (buildingConfig.cost && !resourceInventory.hasResources(buildingConfig.cost)) {
+            if (buildingConfig.cost && !resourceInventory.hasTotalResources(buildingConfig.cost, existingNodes)) {
                 onShowToast('Not enough resources to build this!');
                 return;
             }
@@ -86,7 +88,10 @@ export const BuildingPlacementHandler: React.FC<BuildingPlacementHandlerProps> =
 
             // Deduct cost
             if (buildingConfig.cost) {
-                resourceInventory.removeResources(buildingConfig.cost);
+                const result = resourceInventory.removeTotalResources(buildingConfig.cost, existingNodes);
+                if (result.success) {
+                    onNodesUpdate(result.updatedNodes);
+                }
             }
 
             // If storage building, increase capacity
@@ -96,7 +101,7 @@ export const BuildingPlacementHandler: React.FC<BuildingPlacementHandlerProps> =
 
             onBuildingPlaced(newNode);
         },
-        [selectedBuildingType, resourceInventory, resourceFields, existingNodes, onBuildingPlaced, screenToFlowPosition, onShowToast]
+        [selectedBuildingType, resourceInventory, resourceFields, existingNodes, onBuildingPlaced, onNodesUpdate, screenToFlowPosition, onShowToast]
     );
 
     const ghostPreview = useGhostPreview(selectedBuildingType, mousePosition);
