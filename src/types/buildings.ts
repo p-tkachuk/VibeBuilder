@@ -12,7 +12,8 @@ export enum BuildingType {
   MINER = 'miner',
   SMELTER = 'smelter',
   ASSEMBLER = 'assembler',
-  SPLITTER = 'splitter'
+  SPLITTER = 'splitter',
+  STORAGE = 'storage'
 }
 
 export const BUILDING_CONFIGS = {
@@ -47,5 +48,13 @@ export const BUILDING_CONFIGS = {
     icon: '↔️',
     inputs: ['any'],
     outputs: ['any', 'any']
+  },
+  [BuildingType.STORAGE]: {
+    name: 'Storage',
+    description: 'Stores items for later use',
+    color: '#FFD700',
+    icon: '📦',
+    inputs: ['any'],
+    outputs: ['any']
   }
 };

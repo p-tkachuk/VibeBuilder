@@ -47,7 +47,7 @@ export default function App() {
   const [nodes, setNodes] = useState(initialNodes);
   const [edges, setEdges] = useState(initialEdges);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [resources, setResources] = useState<Record<string, number>>(() =>
+  const [resources] = useState<Record<string, number>>(() =>
     Object.values(ResourceType).reduce((acc, type) => ({ ...acc, [type]: 0 }), {})
   );
 
