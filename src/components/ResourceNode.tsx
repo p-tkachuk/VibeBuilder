@@ -1,5 +1,7 @@
 import React from 'react';
 import { ResourceType, RESOURCE_COLORS, RESOURCE_PATTERNS } from '../types/terrain';
+import { resourceNodeStyles } from '../styles/components.styles';
+import { OPACITY } from '../constants/game.constants';
 
 interface ResourceNodeData {
   resourceType: ResourceType;
@@ -12,27 +14,22 @@ interface ResourceNodeProps {
   data: ResourceNodeData;
 }
 
+/**
+ * ResourceNode component - displays a resource field
+ * Follows Single Responsibility Principle - only handles resource field rendering
+ */
 export const ResourceNode: React.FC<ResourceNodeProps> = ({ data }) => {
+  const containerStyle = {
+    ...resourceNodeStyles.container,
+    width: data.width,
+    height: data.height,
+    backgroundColor: RESOURCE_COLORS[data.resourceType],
+    opacity: OPACITY.RESOURCE_FIELD,
+    border: `2px solid ${RESOURCE_COLORS[data.resourceType]}`,
+  };
+
   return (
-    <div
-      style={{
-        width: data.width,
-        height: data.height,
-        backgroundColor: RESOURCE_COLORS[data.resourceType],
-        opacity: 0.8,
-        borderRadius: '8px',
-        border: `2px solid ${RESOURCE_COLORS[data.resourceType]}`,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: '24px',
-        fontWeight: 'bold',
-        textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
-        boxShadow: 'inset 0 0 20px rgba(0,0,0,0.3)',
-        pointerEvents: 'none',
-        zIndex: 0
-      }}
-    >
+    <div style={containerStyle}>
       {RESOURCE_PATTERNS[data.resourceType]}
     </div>
   );

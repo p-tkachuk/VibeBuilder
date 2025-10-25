@@ -1,14 +1,14 @@
 import { useState, useCallback, useMemo } from 'react';
-import { ReactFlow, applyNodeChanges, applyEdgeChanges, addEdge, type Node, type Edge } from '@xyflow/react';
+import { ReactFlow, applyNodeChanges, applyEdgeChanges, addEdge, type Node, type Edge, type NodeChange, type EdgeChange, type Connection, type NodeTypes } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { BuildingMenu } from './components/BuildingMenu';
 import { BuildingNode } from './components/BuildingNode';
 import { ResourceNode } from './components/ResourceNode';
 import { TerrainOverlay } from './components/TerrainOverlay';
-import { ClickHandler } from './components/ClickHandler';
-import { BuildingType } from './types/buildings';
-import type { ResourceField } from './types/terrain';
-import { ResourceType } from './types/terrain';
+import { BuildingPlacementHandler } from './components/BuildingPlacementHandler';
+import { useResourceFields } from './hooks/useResourceFields';
+import { useBuildingPlacement } from './hooks/useBuildingPlacement';
+import { COLORS } from './constants/game.constants';
 
 const initialNodes: Node[] = [];
 const initialEdges: Edge[] = [];
@@ -18,135 +18,58 @@ const nodeTypes = {
   resource: ResourceNode,
 };
 
-// Generate some resource fields
-const generateResourceFields = (): ResourceField[] => {
-  const fields: ResourceField[] = [];
-  
-  // Iron ore fields
-  fields.push({
-    id: 'iron-ore-1',
-    type: ResourceType.IRON_ORE,
-    x: 200,
-    y: 150,
-    width: 200,
-    height: 120,
-    intensity: 0.8
-  });
-  
-  fields.push({
-    id: 'iron-ore-2',
-    type: ResourceType.IRON_ORE,
-    x: 600,
-    y: 300,
-    width: 150,
-    height: 100,
-    intensity: 0.6
-  });
-  
-  // Coal fields
-  fields.push({
-    id: 'coal-1',
-    type: ResourceType.COAL,
-    x: 100,
-    y: 400,
-    width: 180,
-    height: 140,
-    intensity: 0.7
-  });
-  
-  // Copper ore fields
-  fields.push({
-    id: 'copper-ore-1',
-    type: ResourceType.COPPER_ORE,
-    x: 500,
-    y: 100,
-    width: 160,
-    height: 80,
-    intensity: 0.9
-  });
-  
-  // Stone fields
-  fields.push({
-    id: 'stone-1',
-    type: ResourceType.STONE,
-    x: 800,
-    y: 200,
-    width: 120,
-    height: 90,
-    intensity: 0.5
-  });
-  
-  return fields;
-};
-
+/**
+ * Main App component - orchestrates the entire game
+ * Follows Single Responsibility Principle - only handles top-level state and coordination
+ * Dependency Inversion Principle - depends on abstractions (hooks and services) not concretions
+ */
 export default function App() {
   const [nodes, setNodes] = useState(initialNodes);
   const [edges, setEdges] = useState(initialEdges);
-  const [resourceFields] = useState<ResourceField[]>(generateResourceFields());
-  const [selectedBuildingType, setSelectedBuildingType] = useState<BuildingType | null>(null);
-  
-  // Convert resource fields to React Flow nodes for proper positioning
-  const resourceNodes: Node[] = useMemo(() => {
-    return resourceFields.map((field) => ({
-      id: field.id,
-      type: 'resource',
-      position: { x: field.x, y: field.y },
-      data: {
-        resourceType: field.type,
-        width: field.width,
-        height: field.height,
-        intensity: field.intensity
-      },
-      draggable: false,
-      selectable: false,
-      deletable: false
-    }));
-  }, [resourceFields]);
+
+  // Use custom hooks for separation of concerns
+  const { resourceNodes, resourceFields } = useResourceFields();
+  const {
+    selectedBuildingType,
+    handleBuildingSelect,
+    clearSelection,
+  } = useBuildingPlacement();
 
   const onNodesChange = useCallback(
-    (changes: any) => {
+    (changes: NodeChange[]) => {
       // Filter out changes to resource nodes since they shouldn't be modified
-      const filteredChanges = changes.filter((change: any) => {
-        const nodeId = change.id;
-        return !resourceFields.some(field => field.id === nodeId);
+      const filteredChanges = changes.filter((change) => {
+        if ('id' in change) {
+          return !resourceFields.some(field => field.id === change.id);
+        }
+        return true;
       });
       setNodes((nodesSnapshot) => applyNodeChanges(filteredChanges, nodesSnapshot));
     },
     [resourceFields],
   );
+
   const onEdgesChange = useCallback(
-    (changes: any) => setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot)),
+    (changes: EdgeChange[]) => setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot)),
     [],
   );
+
   const onConnect = useCallback(
-    (params: any) => setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot)),
+    (params: Connection) => setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot)),
     [],
   );
-
-  // Check if a position is within a resource field
-  const isPositionInResourceField = useCallback((x: number, y: number, resourceType?: ResourceType): boolean => {
-    return resourceFields.some(field => {
-      const isInField = x >= field.x && x <= field.x + field.width && 
-                       y >= field.y && y <= field.y + field.height;
-      return resourceType ? isInField && field.type === resourceType : isInField;
-    });
-  }, [resourceFields]);
-
-  const handleBuildingSelect = useCallback((buildingType: BuildingType) => {
-    setSelectedBuildingType(buildingType);
-  }, []);
 
   const handleBuildingPlaced = useCallback((newNode: Node) => {
     setNodes((nds) => [...nds, newNode]);
-    setSelectedBuildingType(null); // Clear selection after placement
-  }, []);
+    clearSelection(); // Clear selection after placement
+  }, [clearSelection]);
 
   const allNodes = useMemo(() => [...resourceNodes, ...nodes], [resourceNodes, nodes]);
 
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
-      <BuildingMenu 
-        onBuildingSelect={handleBuildingSelect} 
+      <BuildingMenu
+        onBuildingSelect={handleBuildingSelect}
         selectedBuildingType={selectedBuildingType}
       />
       <ReactFlow
@@ -155,16 +78,15 @@ export default function App() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
-        nodeTypes={nodeTypes as any}
+        nodeTypes={nodeTypes as NodeTypes}
         fitView
-        style={{ backgroundColor: '#2d5016' }}
+        style={{ backgroundColor: COLORS.TERRAIN_PRIMARY }}
       >
         <TerrainOverlay />
-        <ClickHandler
+        <BuildingPlacementHandler
           selectedBuildingType={selectedBuildingType}
           onBuildingPlaced={handleBuildingPlaced}
           resourceFields={resourceFields}
-          isPositionInResourceField={isPositionInResourceField}
         />
       </ReactFlow>
     </div>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { BuildingType, BUILDING_CONFIGS } from '../types/buildings';
+import { buildingNodeStyles, handleStyles } from '../styles/components.styles';
 
 export interface BuildingNodeData {
   buildingType: BuildingType;
@@ -12,70 +13,64 @@ interface BuildingNodeProps {
   ghost?: boolean;
 }
 
+/**
+ * BuildingNode component - displays a building with handles for connections
+ * Follows Single Responsibility Principle - only handles building rendering
+ * Open/Closed Principle - handle positioning is abstracted and extensible
+ */
 export const BuildingNode: React.FC<BuildingNodeProps> = ({ data, ghost }) => {
   const config = BUILDING_CONFIGS[data.buildingType];
-  
+
+  const containerStyle = {
+    ...buildingNodeStyles.container,
+    backgroundColor: config.color,
+    border: ghost
+      ? buildingNodeStyles.ghost.border
+      : '2px solid rgba(255,255,255,0.3)',
+    opacity: ghost ? buildingNodeStyles.ghost.opacity : 1,
+    pointerEvents: buildingNodeStyles.ghost.pointerEvents,
+    filter: ghost ? buildingNodeStyles.ghost.filter : undefined,
+  };
+
+  const renderHandle = (type: 'target' | 'source', position: Position, key?: number) => (
+    <Handle
+      key={key}
+      type={type}
+      position={position}
+      style={handleStyles}
+    />
+  );
+
+  const renderInputHandles = () => {
+    if (config.inputs.length === 0 || ghost) return null;
+
+    return renderHandle('target', Position.Left);
+  };
+
+  const renderOutputHandles = () => {
+    if (config.outputs.length === 0 || ghost) return null;
+
+    return config.outputs.map((_, index) => {
+      if (config.outputs.length === 1) {
+        return renderHandle('source', Position.Right, index);
+      } else {
+        // For splitters, place outputs on top and bottom
+        return renderHandle(
+          'source',
+          index === 0 ? Position.Top : Position.Bottom,
+          index
+        );
+      }
+    });
+  };
+
   return (
-    <div
-      style={{
-        backgroundColor: config.color,
-        borderRadius: '8px',
-        padding: '12px',
-        minWidth: '120px',
-        textAlign: 'center',
-        color: 'white',
-        fontSize: '12px',
-        fontWeight: 'bold',
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-        border: ghost ? '2px dashed rgba(255,255,255,0.8)' : '2px solid rgba(255,255,255,0.3)',
-        opacity: ghost ? 0.7 : 1,
-        pointerEvents: 'none',
-        filter: ghost ? 'blur(0.5px) grayscale(0.3)' : undefined
-      }}
-    >
-      <div style={{ fontSize: '20px', marginBottom: '4px' }}>
-        {config.icon}
-      </div>
+    <div style={containerStyle}>
+      <div style={buildingNodeStyles.icon}>{config.icon}</div>
       <div>{data.label}</div>
-      
-      {/* Input handles */}
-      {config.inputs.length > 0 && !ghost && (
-        <Handle
-          type="target"
-          position={Position.Left}
-          style={{ background: '#555', width: '8px', height: '8px' }}
-        />
-      )}
-      
-      {/* Output handles */}
-      {config.outputs.length > 0 && !ghost && config.outputs.map((_, index) => {
-        if (config.outputs.length === 1) {
-          return (
-            <Handle
-              key={index}
-              type="source"
-              position={Position.Right}
-              style={{ background: '#555', width: '8px', height: '8px' }}
-            />
-          );
-        } else {
-          // For splitters, place outputs on top and bottom
-          return (
-            <Handle
-              key={index}
-              type="source"
-              position={index === 0 ? Position.Top : Position.Bottom}
-              style={{ 
-                background: '#555', 
-                width: '8px', 
-                height: '8px',
-                left: '50%',
-                transform: 'translateX(-50%)'
-              }}
-            />
-          );
-        }
-      })}
+
+      {renderInputHandles()}
+      {renderOutputHandles()}
     </div>
   );
 };
