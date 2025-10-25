@@ -61,15 +61,16 @@ export default function App() {
   } = useBuildingPlacement();
   const handleDeleteSelected = useCallback(() => {
     setNodes((nds) => {
+      const deletedNodeIds = nds.filter((n) => n.selected).map((n) => n.id);
       // Count storage buildings being deleted
       const deletedStorageBuildings = nds.filter((n) => n.selected && n.type === 'building' && n.data.buildingType === BuildingType.STORAGE);
       if (deletedStorageBuildings.length > 0) {
         // Decrease storage capacity by 1000 per deleted storage building
         resourceInventory.decreaseStorageCapacity(deletedStorageBuildings.length * 1000);
       }
+      setEdges((eds) => eds.filter((e) => !e.selected && !deletedNodeIds.includes(e.source) && !deletedNodeIds.includes(e.target)));
       return nds.filter((n) => !n.selected);
     });
-    setEdges((eds) => eds.filter((e) => !e.selected));
   }, [setNodes, setEdges, resourceInventory]);
 
   // Handle keyboard actions

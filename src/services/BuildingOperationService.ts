@@ -56,7 +56,7 @@ export class BuildingOperationService {
         const buildingType = minerNode.data.buildingType as BuildingType;
 
         // Check if output is connected
-        const outputEdge = edges.find(edge => edge.source === minerNode.id);
+        const outputEdge = edges.find(edge => edge.source === minerNode.id && allNodes.some(n => n.id === edge.target));
         if (!outputEdge) return;
 
         const resourceType = this.getResourceTypeForMiner(buildingType);
@@ -97,11 +97,11 @@ export class BuildingOperationService {
         existingUpdates: Record<string, Record<string, number>>
     ): void {
         // Check output connections
-        const outputEdges = edges.filter(edge => edge.source === producerNode.id);
+        const outputEdges = edges.filter(edge => edge.source === producerNode.id && allNodes.some(n => n.id === edge.target));
         if (outputEdges.length === 0) return;
 
         // Check input connections
-        const inputEdges = edges.filter(edge => edge.target === producerNode.id);
+        const inputEdges = edges.filter(edge => edge.target === producerNode.id && allNodes.some(n => n.id === edge.source));
         if (inputEdges.length === 0) return;
 
         // Process based on building type

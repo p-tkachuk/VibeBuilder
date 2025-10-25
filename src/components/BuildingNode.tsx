@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import type { Edge } from '@xyflow/react';
 import { BuildingType, BUILDING_CONFIGS } from '../types/buildings';
@@ -23,6 +23,7 @@ interface BuildingNodeProps {
  * Open/Closed Principle - handle positioning is abstracted and extensible
  */
 export const BuildingNode: React.FC<BuildingNodeProps> = ({ data, ghost }) => {
+  const [isHovered, setIsHovered] = useState(false);
   const config = BUILDING_CONFIGS[data.buildingType];
 
   const renderHandle = (id: string, type: 'target' | 'source', position: Position, isConnected: boolean) => (
@@ -69,6 +70,8 @@ export const BuildingNode: React.FC<BuildingNodeProps> = ({ data, ghost }) => {
     <div
       className={`${styles.container} ${ghost ? styles.ghost : ''}`}
       style={{ backgroundColor: config.color }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       <div className={styles.icon}>{config.icon}</div>
       <div>{data.label}</div>
@@ -90,6 +93,15 @@ export const BuildingNode: React.FC<BuildingNodeProps> = ({ data, ghost }) => {
 
       {renderInputHandles()}
       {renderOutputHandles()}
+
+      {isHovered && data.buildingType === BuildingType.STORAGE && data.inventory && (
+        <div className={styles.tooltip}>
+          <strong>Inventory:</strong><br />
+          {Object.entries(data.inventory).map(([key, value]) => (
+            <div key={key}>{key}: {value}</div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
