@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { COLORS } from '../constants/game.constants';
 
 interface ToastProps {
     message: string;
