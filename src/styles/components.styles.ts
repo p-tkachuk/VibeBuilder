@@ -7,10 +7,6 @@ import { COLORS, SIZES, Z_INDEX, OPACITY } from '../constants/game.constants';
 
 export const buildingMenuStyles = {
     container: {
-        position: 'absolute' as const,
-        top: '20px',
-        left: '20px',
-        zIndex: Z_INDEX.MENU,
         backgroundColor: COLORS.MENU_BACKGROUND,
         borderRadius: '8px',
         padding: SIZES.MENU_PADDING,

@@ -7,12 +7,14 @@ import { ResourceNode } from './components/ResourceNode';
 import { MapBorderNode } from './components/MapBorderNode';
 import { TerrainOverlay } from './components/TerrainOverlay';
 import { BuildingPlacementHandler } from './components/BuildingPlacementHandler';
+import { ResourcePanel } from './components/ResourcePanel';
 import { Toast } from './components/Toast';
 import { useResourceFields } from './hooks/useResourceFields';
 import { useBuildingPlacement } from './hooks/useBuildingPlacement';
 import { COLORS, BUILDING_WIDTH, BUILDING_HEIGHT } from './constants/game.constants';
 import { GAME_CONFIG } from './config/game.config';
 import { snapToGrid, getBuildingCenter } from './utils/position.utils';
+import { ResourceType } from './types/terrain';
 
 const initialNodes: Node[] = [
   {
@@ -45,6 +47,9 @@ export default function App() {
   const [nodes, setNodes] = useState(initialNodes);
   const [edges, setEdges] = useState(initialEdges);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [resources, setResources] = useState<Record<string, number>>(() =>
+    Object.values(ResourceType).reduce((acc, type) => ({ ...acc, [type]: 0 }), {})
+  );
 
   // Use custom hooks for separation of concerns
   const { resourceNodes, resourceFields } = useResourceFields();
@@ -136,29 +141,38 @@ export default function App() {
 
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
-      <BuildingMenu
-        onBuildingSelect={handleBuildingSelect}
-        selectedBuildingType={selectedBuildingType}
-      />
-      <ReactFlow
-        nodes={allNodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        nodeTypes={nodeTypes as NodeTypes}
-        fitView
-        style={{ backgroundColor: COLORS.TERRAIN_PRIMARY }}
-      >
-        <TerrainOverlay />
-        <BuildingPlacementHandler
-          selectedBuildingType={selectedBuildingType}
-          onBuildingPlaced={handleBuildingPlaced}
-          resourceFields={resourceFields}
-          existingNodes={allNodes}
-          onShowToast={showToast}
-        />
-      </ReactFlow>
+      <div style={{ position: 'absolute', top: '20px', left: '20px', right: '20px', zIndex: 10, display: 'flex', gap: '20px', alignItems: 'flex-start', pointerEvents: 'none' }}>
+        <div style={{ pointerEvents: 'auto' }}>
+          <BuildingMenu
+            onBuildingSelect={handleBuildingSelect}
+            selectedBuildingType={selectedBuildingType}
+          />
+        </div>
+        <div style={{ pointerEvents: 'auto' }}>
+          <ResourcePanel resources={resources} />
+        </div>
+      </div>
+      <div style={{ position: 'relative', height: '100vh' }}>
+        <ReactFlow
+          nodes={allNodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          nodeTypes={nodeTypes as NodeTypes}
+          fitView
+          style={{ backgroundColor: COLORS.TERRAIN_PRIMARY }}
+        >
+          <TerrainOverlay />
+          <BuildingPlacementHandler
+            selectedBuildingType={selectedBuildingType}
+            onBuildingPlaced={handleBuildingPlaced}
+            resourceFields={resourceFields}
+            existingNodes={allNodes}
+            onShowToast={showToast}
+          />
+        </ReactFlow>
+      </div>
       {toastMessage && <Toast message={toastMessage} onClose={hideToast} />}
     </div>
   );
