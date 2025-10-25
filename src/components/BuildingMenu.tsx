@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { BuildingType, BUILDING_CONFIGS } from '../types/buildings';
+import { ResourceInventoryService } from '../services/ResourceInventoryService';
 import styles from './BuildingMenu.module.css';
 
 const MINER_TYPES = [
@@ -19,7 +20,38 @@ const NON_MINER_BUILDINGS = [
 interface BuildingMenuProps {
   onBuildingSelect: (buildingType: BuildingType) => void;
   selectedBuildingType: BuildingType | null;
+  resourceInventory: ResourceInventoryService;
 }
+
+const renderBuildingButton = (
+  buildingType: BuildingType,
+  onBuildingSelect: (buildingType: BuildingType) => void,
+  selectedBuildingType: BuildingType | null,
+  resourceInventory: ResourceInventoryService,
+  isSubButton = false
+) => {
+  const config = BUILDING_CONFIGS[buildingType];
+  const isSelected = selectedBuildingType === buildingType;
+  const isAffordable = config.cost ? resourceInventory.hasResources(config.cost) : true;
+  const costText = config.cost ? Object.entries(config.cost).map(([res, amt]) => `${res}: ${amt}`).join(', ') : 'Free';
+
+  return (
+    <button
+      key={buildingType}
+      onClick={() => onBuildingSelect(buildingType)}
+      disabled={!isAffordable}
+      className={`${styles.button} ${isSubButton ? styles.subButton : ''} ${isSelected ? styles.selected : ''} ${!isAffordable ? styles.disabled : ''}`}
+      style={!isSelected ? { backgroundColor: isAffordable ? config.color : '#666' } : undefined}
+    >
+      <span className={styles.icon}>{config.icon}</span>
+      <div>
+        <div className={styles.text}>{config.name}</div>
+        <div className={styles.description}>{config.description}</div>
+        <div className={styles.cost}>Cost: {costText}</div>
+      </div>
+    </button>
+  );
+};
 
 /**
  * BuildingMenu component - displays available buildings for placement
@@ -28,6 +60,7 @@ interface BuildingMenuProps {
 export const BuildingMenu: React.FC<BuildingMenuProps> = ({
   onBuildingSelect,
   selectedBuildingType,
+  resourceInventory,
 }) => {
   const [minersExpanded, setMinersExpanded] = useState(false);
 
@@ -63,48 +96,16 @@ export const BuildingMenu: React.FC<BuildingMenuProps> = ({
 
       {minersExpanded && (
         <div className={styles.submenu}>
-          {MINER_TYPES.map((buildingType) => {
-            const config = BUILDING_CONFIGS[buildingType];
-            const isSelected = selectedBuildingType === buildingType;
-
-            return (
-              <button
-                key={buildingType}
-                onClick={() => onBuildingSelect(buildingType)}
-                className={`${styles.button} ${styles.subButton} ${isSelected ? styles.selected : ''}`}
-                style={!isSelected ? { backgroundColor: config.color } : undefined}
-              >
-                <span className={styles.icon}>{config.icon}</span>
-                <div>
-                  <div className={styles.text}>{config.name}</div>
-                  <div className={styles.description}>{config.description}</div>
-                </div>
-              </button>
-            );
-          })}
+          {MINER_TYPES.map((buildingType) =>
+            renderBuildingButton(buildingType, onBuildingSelect, selectedBuildingType, resourceInventory, true)
+          )}
         </div>
       )}
 
       {/* Other buildings */}
-      {NON_MINER_BUILDINGS.map((buildingType) => {
-        const config = BUILDING_CONFIGS[buildingType];
-        const isSelected = selectedBuildingType === buildingType;
-
-        return (
-          <button
-            key={buildingType}
-            onClick={() => onBuildingSelect(buildingType)}
-            className={`${styles.button} ${isSelected ? styles.selected : ''}`}
-            style={!isSelected ? { backgroundColor: config.color } : undefined}
-          >
-            <span className={styles.icon}>{config.icon}</span>
-            <div>
-              <div className={styles.text}>{config.name}</div>
-              <div className={styles.description}>{config.description}</div>
-            </div>
-          </button>
-        );
-      })}
+      {NON_MINER_BUILDINGS.map((buildingType) =>
+        renderBuildingButton(buildingType, onBuildingSelect, selectedBuildingType, resourceInventory)
+      )}
     </div>
   );
 };

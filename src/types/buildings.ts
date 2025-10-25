@@ -26,7 +26,8 @@ export const BUILDING_CONFIGS = {
     color: '#B87333',
     icon: '⛏️',
     inputs: [],
-    outputs: ['copper-ore']
+    outputs: ['copper-ore'],
+    cost: { stone: 10 }
   },
   [BuildingType.COAL_MINER]: {
     name: 'Coal Miner',
@@ -34,7 +35,8 @@ export const BUILDING_CONFIGS = {
     color: '#2F2F2F',
     icon: '⛏️',
     inputs: [],
-    outputs: ['coal']
+    outputs: ['coal'],
+    cost: { stone: 10 }
   },
   [BuildingType.IRON_MINER]: {
     name: 'Iron Miner',
@@ -42,7 +44,8 @@ export const BUILDING_CONFIGS = {
     color: '#8B4513',
     icon: '⛏️',
     inputs: [],
-    outputs: ['iron-ore']
+    outputs: ['iron-ore'],
+    cost: { stone: 10 }
   },
   [BuildingType.STONE_MINER]: {
     name: 'Stone Miner',
@@ -50,7 +53,8 @@ export const BUILDING_CONFIGS = {
     color: '#696969',
     icon: '⛏️',
     inputs: [],
-    outputs: ['stone']
+    outputs: ['stone'],
+    cost: { stone: 5 }
   },
   [BuildingType.SMELTER]: {
     name: 'Iron Smelter',
@@ -58,7 +62,8 @@ export const BUILDING_CONFIGS = {
     color: '#FF4500',
     icon: '🔥',
     inputs: ['iron-ore'],
-    outputs: ['iron-plate']
+    outputs: ['iron-plate'],
+    cost: { stone: 20 }
   },
   [BuildingType.ASSEMBLER]: {
     name: 'Iron Gear Assembler',
@@ -66,7 +71,8 @@ export const BUILDING_CONFIGS = {
     color: '#4169E1',
     icon: '⚙️',
     inputs: ['iron-plate'],
-    outputs: ['iron-gear']
+    outputs: ['iron-gear'],
+    cost: { stone: 15 }
   },
   [BuildingType.SPLITTER]: {
     name: 'Item Splitter',
@@ -74,7 +80,8 @@ export const BUILDING_CONFIGS = {
     color: '#9370DB',
     icon: '↔️',
     inputs: ['any'],
-    outputs: ['any', 'any']
+    outputs: ['any', 'any'],
+    cost: { stone: 5 }
   },
   [BuildingType.STORAGE]: {
     name: 'Storage',
@@ -82,6 +89,7 @@ export const BUILDING_CONFIGS = {
     color: '#FFD700',
     icon: '📦',
     inputs: ['any'],
-    outputs: ['any']
+    outputs: ['any'],
+    cost: { stone: 8 }
   }
 };

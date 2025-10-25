@@ -64,6 +64,22 @@
     opacity: 0.9;
 }
 
+.cost {
+    font-size: 10px;
+    opacity: 0.7;
+    margin-top: 2px;
+}
+
+.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
 .submenu {
     margin-left: 20px;
     margin-top: 4px;

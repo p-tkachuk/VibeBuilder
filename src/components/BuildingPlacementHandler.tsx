@@ -1,12 +1,13 @@
 import React, { useState, useCallback } from 'react';
 import { useReactFlow, type Node } from '@xyflow/react';
-import { BuildingType } from '../types/buildings';
+import { BuildingType, BUILDING_CONFIGS } from '../types/buildings';
 import { BuildingPlacementService } from '../services/BuildingPlacementService';
 import { useGhostPreview } from '../hooks/useGhostPreview';
 import { GhostPreview } from './GhostPreview';
 import { snapToGrid } from '../utils/position.utils';
 import type { Position } from '../utils/position.utils';
 import type { ResourceField } from '../types/terrain';
+import { ResourceInventoryService } from '../services/ResourceInventoryService';
 
 /**
  * BuildingPlacementHandler component - handles building placement interactions
@@ -19,6 +20,7 @@ interface BuildingPlacementHandlerProps {
     resourceFields: ResourceField[];
     existingNodes: Node[];
     onShowToast: (message: string) => void;
+    resourceInventory: ResourceInventoryService;
 }
 
 export const BuildingPlacementHandler: React.FC<BuildingPlacementHandlerProps> = ({
@@ -27,6 +29,7 @@ export const BuildingPlacementHandler: React.FC<BuildingPlacementHandlerProps> =
     resourceFields,
     existingNodes,
     onShowToast,
+    resourceInventory,
 }) => {
     const { screenToFlowPosition } = useReactFlow();
     const [mousePosition, setMousePosition] = useState<Position | null>(null);
@@ -55,6 +58,12 @@ export const BuildingPlacementHandler: React.FC<BuildingPlacementHandlerProps> =
         (event: React.MouseEvent) => {
             if (!selectedBuildingType) return;
 
+            const buildingConfig = BUILDING_CONFIGS[selectedBuildingType];
+            if (buildingConfig.cost && !resourceInventory.hasResources(buildingConfig.cost)) {
+                onShowToast('Not enough resources to build this!');
+                return;
+            }
+
             const screenPosition = { x: event.clientX, y: event.clientY };
             const validation = BuildingPlacementService.validatePlacement(
                 selectedBuildingType,
@@ -75,9 +84,14 @@ export const BuildingPlacementHandler: React.FC<BuildingPlacementHandlerProps> =
                 screenToFlowPosition
             );
 
+            // Deduct cost
+            if (buildingConfig.cost) {
+                resourceInventory.removeResources(buildingConfig.cost);
+            }
+
             onBuildingPlaced(newNode);
         },
-        [selectedBuildingType, resourceFields, existingNodes, onBuildingPlaced, screenToFlowPosition, onShowToast]
+        [selectedBuildingType, resourceInventory, resourceFields, existingNodes, onBuildingPlaced, screenToFlowPosition, onShowToast]
     );
 
     const ghostPreview = useGhostPreview(selectedBuildingType, mousePosition);

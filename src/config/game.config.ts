@@ -26,6 +26,13 @@ export interface GameConfig {
         min: number;
         max: number;
     };
+
+    // Resource inventory settings
+    storageCapacity: number;
+
+    startingResources: {
+        [key: string]: number;
+    };
 }
 
 export const GAME_CONFIG: GameConfig = {
@@ -53,5 +60,14 @@ export const GAME_CONFIG: GameConfig = {
     resourceIntensity: {
         min: 0.5,
         max: 0.9,
+    },
+
+    // Storage capacity in units
+    storageCapacity: 1000,
+
+    // Starting resources
+    startingResources: {
+        stone: 100,
+        'copper-ore': 100,
     },
 };

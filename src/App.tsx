@@ -15,6 +15,7 @@ import { COLORS, BUILDING_WIDTH, BUILDING_HEIGHT } from './constants/game.consta
 import { GAME_CONFIG } from './config/game.config';
 import { snapToGrid, getBuildingCenter, doRectanglesOverlap } from './utils/position.utils';
 import { ResourceType } from './types/terrain';
+import { ResourceInventoryService } from './services/ResourceInventoryService';
 
 const initialNodes: Node[] = [
   {
@@ -47,9 +48,7 @@ export default function App() {
   const [nodes, setNodes] = useState(initialNodes);
   const [edges, setEdges] = useState(initialEdges);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [resources] = useState<Record<string, number>>(() =>
-    Object.values(ResourceType).reduce((acc, type) => ({ ...acc, [type]: 0 }), {})
-  );
+  const [resourceInventory] = useState(() => new ResourceInventoryService());
 
   // Use custom hooks for separation of concerns
   const { resourceNodes, resourceFields } = useResourceFields();
@@ -175,10 +174,11 @@ export default function App() {
           <BuildingMenu
             onBuildingSelect={handleBuildingSelect}
             selectedBuildingType={selectedBuildingType}
+            resourceInventory={resourceInventory}
           />
         </div>
         <div style={{ pointerEvents: 'auto' }}>
-          <ResourcePanel resources={resources} />
+          <ResourcePanel resources={resourceInventory.getInventory()} />
         </div>
       </div>
       <div style={{ position: 'relative', height: '100vh' }}>
@@ -199,6 +199,7 @@ export default function App() {
             resourceFields={resourceFields}
             existingNodes={allNodes}
             onShowToast={showToast}
+            resourceInventory={resourceInventory}
           />
         </ReactFlow>
       </div>
