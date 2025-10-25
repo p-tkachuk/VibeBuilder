@@ -6,6 +6,7 @@ import { BuildingNode } from './components/BuildingNode';
 import { ResourceNode } from './components/ResourceNode';
 import { TerrainOverlay } from './components/TerrainOverlay';
 import { BuildingPlacementHandler } from './components/BuildingPlacementHandler';
+import { Toast } from './components/Toast';
 import { useResourceFields } from './hooks/useResourceFields';
 import { useBuildingPlacement } from './hooks/useBuildingPlacement';
 import { COLORS } from './constants/game.constants';
@@ -26,6 +27,7 @@ const nodeTypes = {
 export default function App() {
   const [nodes, setNodes] = useState(initialNodes);
   const [edges, setEdges] = useState(initialEdges);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Use custom hooks for separation of concerns
   const { resourceNodes, resourceFields } = useResourceFields();
@@ -34,6 +36,14 @@ export default function App() {
     handleBuildingSelect,
     clearSelection,
   } = useBuildingPlacement();
+
+  const showToast = useCallback((message: string) => {
+    setToastMessage(message);
+  }, []);
+
+  const hideToast = useCallback(() => {
+    setToastMessage(null);
+  }, []);
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
@@ -87,8 +97,10 @@ export default function App() {
           selectedBuildingType={selectedBuildingType}
           onBuildingPlaced={handleBuildingPlaced}
           resourceFields={resourceFields}
+          onShowToast={showToast}
         />
       </ReactFlow>
+      {toastMessage && <Toast message={toastMessage} onClose={hideToast} />}
     </div>
   );
 }

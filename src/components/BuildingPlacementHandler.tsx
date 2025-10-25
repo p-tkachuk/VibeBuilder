@@ -17,12 +17,14 @@ interface BuildingPlacementHandlerProps {
     selectedBuildingType: BuildingType | null;
     onBuildingPlaced: (node: Node) => void;
     resourceFields: ResourceField[];
+    onShowToast: (message: string) => void;
 }
 
 export const BuildingPlacementHandler: React.FC<BuildingPlacementHandlerProps> = ({
     selectedBuildingType,
     onBuildingPlaced,
     resourceFields,
+    onShowToast,
 }) => {
     const { screenToFlowPosition } = useReactFlow();
     const [mousePosition, setMousePosition] = useState<Position | null>(null);
@@ -60,7 +62,7 @@ export const BuildingPlacementHandler: React.FC<BuildingPlacementHandlerProps> =
             );
 
             if (!validation.canPlace) {
-                alert(validation.errorMessage);
+                onShowToast(validation.errorMessage!);
                 return;
             }
 
@@ -72,7 +74,7 @@ export const BuildingPlacementHandler: React.FC<BuildingPlacementHandlerProps> =
 
             onBuildingPlaced(newNode);
         },
-        [selectedBuildingType, resourceFields, onBuildingPlaced, screenToFlowPosition]
+        [selectedBuildingType, resourceFields, onBuildingPlaced, screenToFlowPosition, onShowToast]
     );
 
     const ghostPreview = useGhostPreview(selectedBuildingType, mousePosition);
