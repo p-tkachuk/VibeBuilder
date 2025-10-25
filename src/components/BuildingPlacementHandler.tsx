@@ -17,6 +17,7 @@ interface BuildingPlacementHandlerProps {
     selectedBuildingType: BuildingType | null;
     onBuildingPlaced: (node: Node) => void;
     resourceFields: ResourceField[];
+    existingNodes: Node[];
     onShowToast: (message: string) => void;
 }
 
@@ -24,6 +25,7 @@ export const BuildingPlacementHandler: React.FC<BuildingPlacementHandlerProps> =
     selectedBuildingType,
     onBuildingPlaced,
     resourceFields,
+    existingNodes,
     onShowToast,
 }) => {
     const { screenToFlowPosition } = useReactFlow();
@@ -58,6 +60,7 @@ export const BuildingPlacementHandler: React.FC<BuildingPlacementHandlerProps> =
                 selectedBuildingType,
                 screenPosition,
                 resourceFields,
+                existingNodes,
                 screenToFlowPosition
             );
 
@@ -74,7 +77,7 @@ export const BuildingPlacementHandler: React.FC<BuildingPlacementHandlerProps> =
 
             onBuildingPlaced(newNode);
         },
-        [selectedBuildingType, resourceFields, onBuildingPlaced, screenToFlowPosition, onShowToast]
+        [selectedBuildingType, resourceFields, existingNodes, onBuildingPlaced, screenToFlowPosition, onShowToast]
     );
 
     const ghostPreview = useGhostPreview(selectedBuildingType, mousePosition);

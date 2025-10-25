@@ -97,6 +97,7 @@ export default function App() {
           selectedBuildingType={selectedBuildingType}
           onBuildingPlaced={handleBuildingPlaced}
           resourceFields={resourceFields}
+          existingNodes={allNodes}
           onShowToast={showToast}
         />
       </ReactFlow>

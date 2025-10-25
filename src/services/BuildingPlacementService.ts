@@ -1,7 +1,8 @@
 import type { Node } from '@xyflow/react';
 import { BuildingType, BUILDING_CONFIGS } from '../types/buildings';
 import { ResourceType } from '../types/terrain';
-import { isPositionInResourceField, snapToGrid, centerBuildingPosition } from '../utils/position.utils';
+import { BUILDING_WIDTH, BUILDING_HEIGHT } from '../constants/game.constants';
+import { isPositionInResourceField, snapToGrid, centerBuildingPosition, doRectanglesOverlap } from '../utils/position.utils';
 import type { ResourceField } from '../types/terrain';
 import type { Position } from '../utils/position.utils';
 
@@ -17,15 +18,43 @@ export class BuildingPlacementService {
         buildingType: BuildingType,
         position: Position,
         resourceFields: ResourceField[],
+        existingNodes: Node[],
         screenToFlowPosition: (position: Position) => Position
     ): { canPlace: boolean; errorMessage?: string } {
+        // Convert screen coordinates to flow coordinates first
+        const flowPosition = screenToFlowPosition(position);
+        // Snap to grid to match the actual placement logic
+        const snappedPosition = snapToGrid(flowPosition);
+        const newBuildingPosition = centerBuildingPosition(snappedPosition);
+
+        // Check for collision with existing buildings
+        const newBuildingRect = {
+            x: newBuildingPosition.x,
+            y: newBuildingPosition.y,
+            width: BUILDING_WIDTH,
+            height: BUILDING_HEIGHT,
+        };
+
+        const hasCollision = existingNodes.some((node) => {
+            if (node.type !== 'building') return false;
+            const existingRect = {
+                x: node.position.x,
+                y: node.position.y,
+                width: BUILDING_WIDTH,
+                height: BUILDING_HEIGHT,
+            };
+            return doRectanglesOverlap(newBuildingRect, existingRect);
+        });
+
+        if (hasCollision) {
+            return {
+                canPlace: false,
+                errorMessage: 'Cannot place building on top of another building!',
+            };
+        }
+
         // Check if building requires specific resource field
         if (buildingType === BuildingType.MINER) {
-            // Convert screen coordinates to flow coordinates first
-            const flowPosition = screenToFlowPosition(position);
-            // Snap to grid to match the actual placement logic
-            const snappedPosition = snapToGrid(flowPosition);
-
             if (!isPositionInResourceField(snappedPosition, resourceFields, ResourceType.IRON_ORE)) {
                 return {
                     canPlace: false,
