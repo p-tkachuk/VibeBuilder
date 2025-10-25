@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { ReactFlow, applyNodeChanges, applyEdgeChanges, addEdge, type Node, type Edge, type NodeChange, type EdgeChange, type Connection, type NodeTypes } from '@xyflow/react';
+import { ReactFlow, useNodesState, useEdgesState, addEdge, type Node, type Edge, type NodeChange, type EdgeChange, type Connection, type NodeTypes } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { BuildingMenu } from './components/BuildingMenu';
 import { BuildingNode } from './components/BuildingNode';
@@ -46,8 +46,8 @@ const nodeTypes = {
  * Dependency Inversion Principle - depends on abstractions (hooks and services) not concretions
  */
 export default function App() {
-  const [nodes, setNodes] = useState(initialNodes);
-  const [edges, setEdges] = useState(initialEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [resourceInventory] = useState(() => new ResourceInventoryService());
 
@@ -108,7 +108,7 @@ export default function App() {
     setToastMessage(null);
   }, []);
 
-  const onNodesChange = useCallback(
+  const onNodesChangeWrapper = useCallback(
     (changes: NodeChange[]) => {
       // Filter out changes to resource nodes and map border since they shouldn't be modified
       const filteredChanges = changes.filter((change) => {
@@ -175,14 +175,11 @@ export default function App() {
         }
         return true;
       });
-      setNodes((nodesSnapshot) => applyNodeChanges(filteredChanges, nodesSnapshot));
-    },
-    [resourceFields, allNodes],
-  );
 
-  const onEdgesChange = useCallback(
-    (changes: EdgeChange[]) => setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot)),
-    [],
+      // Call the hook's onNodesChange with filtered changes
+      onNodesChange(filteredChanges);
+    },
+    [resourceFields, allNodes, onNodesChange],
   );
 
   const onConnect = useCallback(
@@ -213,7 +210,7 @@ export default function App() {
         <ReactFlow
           nodes={allNodes}
           edges={edges}
-          onNodesChange={onNodesChange}
+          onNodesChange={onNodesChangeWrapper}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           nodeTypes={nodeTypes as NodeTypes}
