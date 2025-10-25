@@ -64,3 +64,17 @@
     margin-top: 4px;
     word-break: break-word;
 }
+
+.storage {
+    font-size: 10px;
+    color: white;
+    text-align: center;
+    margin-top: 4px;
+}
+
+.production {
+    font-size: 10px;
+    color: white;
+    text-align: center;
+    margin-top: 4px;
+}

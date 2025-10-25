@@ -72,7 +72,17 @@ export const BuildingNode: React.FC<BuildingNodeProps> = ({ data, ghost }) => {
     >
       <div className={styles.icon}>{config.icon}</div>
       <div>{data.label}</div>
-      {data.inventory && Object.keys(data.inventory).length > 0 && (
+      {(config as any).capacity !== undefined && (
+        <div className={styles.storage}>
+          Storage: {data.inventory ? Object.values(data.inventory).reduce((sum, v) => sum + v, 0) : 0} / {(config as any).capacity}
+        </div>
+      )}
+      {(config as any).productionRate && (
+        <div className={styles.production}>
+          Production: {(config as any).productionRate}/s
+        </div>
+      )}
+      {data.inventory && Object.keys(data.inventory).length > 0 && !(config as any).capacity && (
         <div className={styles.inventory}>
           {Object.entries(data.inventory).map(([key, value]) => `${key}: ${value}`).join(', ')}
         </div>
