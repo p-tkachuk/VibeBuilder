@@ -65,8 +65,11 @@ export class BuildingOperationService {
         // Check if placed over resource field
         if (!isPositionInResourceField(center, resourceFields, resourceType)) return;
 
+        const config = BUILDING_CONFIGS[buildingType];
+        const outputAmount = (config.outputs as Record<string, number>)[resourceType] || 2;
+
         // Add to connected building's inventory
-        this.addResourceToConnectedBuilding(outputEdge.target, allNodes, resourceType, 2, inventoryUpdates);
+        this.addResourceToConnectedBuilding(outputEdge.target, allNodes, resourceType, outputAmount, inventoryUpdates);
     }
 
     /**
@@ -105,16 +108,55 @@ export class BuildingOperationService {
         if (inputEdges.length === 0) return;
 
         // Process based on building type
-        if (producerNode.data.buildingType === BuildingType.SMELTER) {
-            this.processSmeltingOperation(allNodes, inputEdges, outputEdges, inventoryUpdates, existingUpdates);
+        const buildingType = producerNode.data.buildingType as BuildingType;
+        if (buildingType === BuildingType.SMELTER || buildingType === BuildingType.ASSEMBLER) {
+            this.processGenericProductionOperation(allNodes, inputEdges[0], outputEdges[0], inventoryUpdates, existingUpdates, BUILDING_CONFIGS[buildingType]);
+        } else if (buildingType === BuildingType.SPLITTER) {
+            this.processSplitterOperation(allNodes, inputEdges, outputEdges, inventoryUpdates, existingUpdates);
         }
     }
 
     /**
-     * Process smelting operation for smelters
+     * Generic process production operation for buildings with specific inputs and outputs
      */
-    private static processSmeltingOperation(
-        /* smelterNode: Node, */
+    private static processGenericProductionOperation(
+        allNodes: Node[],
+        inputEdge: Edge,
+        outputEdge: Edge,
+        inventoryUpdates: Record<string, Record<string, number>>,
+        existingUpdates: Record<string, Record<string, number>>,
+        config: any
+    ): void {
+        const inputNode = allNodes.find(n => n.id === inputEdge.source);
+        if (!inputNode || inputNode.type !== 'building') return;
+
+        const inputInventory = existingUpdates[inputNode.id] || (inputNode.data as unknown as BuildingNodeData).inventory || {};
+
+        // Check if all required inputs are available
+        const inputs = config.inputs as Record<string, number>;
+        for (const [resource, required] of Object.entries(inputs)) {
+            if ((inputInventory[resource] || 0) < required) return;
+        }
+
+        // Consume inputs
+        for (const [resource, required] of Object.entries(inputs)) {
+            this.deductResourceFromNode(inputNode.id, resource, required, inventoryUpdates);
+        }
+
+        // Produce outputs
+        const outputs = config.outputs as Record<string, number>;
+        for (const [resource, amount] of Object.entries(outputs)) {
+            this.addResourceToConnectedBuilding(outputEdge.target, allNodes, resource, amount, inventoryUpdates);
+        }
+    }
+
+
+
+    /**
+     * Process splitting operation for splitters
+     */
+    private static processSplitterOperation(
+        /* splitterNode: Node, */
         allNodes: Node[],
         inputEdges: Edge[],
         outputEdges: Edge[],
@@ -126,13 +168,19 @@ export class BuildingOperationService {
 
         const inputInventory = existingUpdates[inputNode.id] || (inputNode.data as unknown as BuildingNodeData).inventory || {};
 
-        if ((inputInventory['iron-ore'] || 0) < 1) return;
+        // Find a resource type with at least 1 item
+        const availableResources = Object.entries(inputInventory).filter(([_, amount]) => amount >= 1);
+        if (availableResources.length === 0) return;
+
+        const [resourceType] = availableResources[0]; // Take the first available
 
         // Consume input
-        this.deductResourceFromNode(inputNode.id, 'iron-ore', 1, inventoryUpdates);
+        this.deductResourceFromNode(inputNode.id, resourceType, 1, inventoryUpdates);
 
-        // Produce output
-        this.addResourceToConnectedBuilding(outputEdges[0].target, allNodes, 'iron-plate', 1, inventoryUpdates);
+        // Produce to each connected output
+        outputEdges.forEach(outputEdge => {
+            this.addResourceToConnectedBuilding(outputEdge.target, allNodes, resourceType, 1, inventoryUpdates);
+        });
     }
 
     /**
@@ -170,7 +218,7 @@ export class BuildingOperationService {
 
     private static isProductionBuilding(node: Node): boolean {
         const buildingType = node.data.buildingType as BuildingType;
-        return [BuildingType.SMELTER, BuildingType.ASSEMBLER].includes(buildingType);
+        return [BuildingType.SMELTER, BuildingType.ASSEMBLER, BuildingType.SPLITTER].includes(buildingType);
     }
 
     private static getResourceTypeForMiner(buildingType: BuildingType): ResourceType {

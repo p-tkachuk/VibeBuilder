@@ -27,68 +27,62 @@ export const BUILDING_CONFIGS = {
     description: 'Extracts copper ore from resource nodes',
     color: '#B87333',
     icon: '⛏️',
-    inputs: [],
-    outputs: ['copper-ore'],
-    cost: { stone: 5 },
-    productionRate: 2
+    inputs: {},
+    outputs: { 'copper-ore': 2 },
+    cost: { stone: 5 }
   },
   [BuildingType.COAL_MINER]: {
     name: 'Coal Miner',
     description: 'Extracts coal from resource nodes',
     color: '#2F2F2F',
     icon: '⛏️',
-    inputs: [],
-    outputs: ['coal'],
-    cost: { stone: 5 },
-    productionRate: 2
+    inputs: {},
+    outputs: { 'coal': 2 },
+    cost: { stone: 5 }
   },
   [BuildingType.IRON_MINER]: {
     name: 'Iron Miner',
     description: 'Extracts iron ore from resource nodes',
     color: '#8B4513',
     icon: '⛏️',
-    inputs: [],
-    outputs: ['iron-ore'],
-    cost: { stone: 5 },
-    productionRate: 2
+    inputs: {},
+    outputs: { 'iron-ore': 2 },
+    cost: { stone: 5 }
   },
   [BuildingType.STONE_MINER]: {
     name: 'Stone Miner',
     description: 'Extracts stone from resource nodes',
     color: '#696969',
     icon: '⛏️',
-    inputs: [],
-    outputs: ['stone'],
-    cost: { stone: 5 },
-    productionRate: 2
+    inputs: {},
+    outputs: { stone: 2 },
+    cost: { stone: 5 }
   },
   [BuildingType.SMELTER]: {
     name: 'Iron Smelter',
     description: 'Smelts iron ore into iron plates',
     color: '#FF4500',
     icon: '🔥',
-    inputs: ['iron-ore'],
-    outputs: ['iron-plate'],
-    cost: { stone: 10, 'iron-ore': 5 },
-    productionRate: 1
+    inputs: { 'iron-ore': 2 },
+    outputs: { 'iron-plate': 1 },
+    cost: { stone: 10, 'iron-ore': 5 }
   },
   [BuildingType.ASSEMBLER]: {
     name: 'Iron Gear Assembler',
     description: 'Assembles iron plates into iron gears',
     color: '#4169E1',
     icon: '⚙️',
-    inputs: ['iron-plate'],
-    outputs: ['iron-gear'],
-    cost: { stone: 10, 'iron-plate': 10 },
-    productionRate: 1
+    inputs: { 'iron-plate': 2 },
+    outputs: { 'iron-gear': 1 },
+    cost: { stone: 10, 'iron-plate': 10 }
   },
   [BuildingType.SPLITTER]: {
     name: 'Item Splitter',
     description: 'Splits incoming items into two outputs',
     color: '#9370DB',
     icon: '↔️',
-    inputs: ['any'],
-    outputs: ['any', 'any'],
+    inputs: { 'any': 2 },
+    outputs: { 'any-0': 1, 'any-1': 1 },
     cost: { 'iron-plate': 5, 'copper-ore': 5 }
   },
   [BuildingType.STORAGE]: {
@@ -96,8 +90,8 @@ export const BUILDING_CONFIGS = {
     description: 'Stores items for later use',
     color: '#FFD700',
     icon: '📦',
-    inputs: ['any'],
-    outputs: ['any'],
+    inputs: { 'any': undefined },
+    outputs: { 'any': undefined },
     cost: { stone: 10 },
     capacity: GAME_CONFIG.storageCapacity
   }

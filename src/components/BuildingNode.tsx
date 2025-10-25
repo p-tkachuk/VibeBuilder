@@ -37,7 +37,8 @@ export const BuildingNode: React.FC<BuildingNodeProps> = ({ data, ghost }) => {
   );
 
   const renderInputHandles = () => {
-    if (config.inputs.length === 0 || ghost) return null;
+    const hasInputs = Object.keys(config.inputs || {}).length > 0;
+    if (!hasInputs || ghost) return null;
 
     const handleId = 'input';
     const isConnected = data.edges.some(edge => edge.target === data.id && edge.targetHandle === handleId);
@@ -46,24 +47,24 @@ export const BuildingNode: React.FC<BuildingNodeProps> = ({ data, ghost }) => {
   };
 
   const renderOutputHandles = () => {
-    if (config.outputs.length === 0 || ghost) return null;
+    const outputs = config.outputs as Record<string, number | undefined>;
+    const outputEntries = Object.entries(outputs);
+    if (outputEntries.length === 0 || ghost) return null;
 
-    return config.outputs.map((_, index) => {
-      const handleId = `output-${index}`;
+    const amt = outputEntries.length;
+    const numOutputs = amt !== undefined ? amt : 1;
+
+    if (numOutputs === 1) {
+      const handleId = 'output';
       const isConnected = data.edges.some(edge => edge.source === data.id && edge.sourceHandle === handleId);
-
-      if (config.outputs.length === 1) {
-        return renderHandle(handleId, 'source', Position.Right, isConnected);
-      } else {
-        // For splitters, place outputs on top and bottom
-        return renderHandle(
-          handleId,
-          'source',
-          index === 0 ? Position.Top : Position.Bottom,
-          isConnected
-        );
-      }
-    });
+      return renderHandle(handleId, 'source', Position.Right, isConnected);
+    } else {
+      return Array.from({ length: numOutputs }).map((_, index) => {
+        const handleId = `output-${index}`;
+        const isConnected = data.edges.some(edge => edge.source === data.id && edge.sourceHandle === handleId);
+        return renderHandle(handleId, 'source', index === 0 ? Position.Top : Position.Bottom, isConnected);
+      });
+    }
   };
 
   return (
@@ -80,9 +81,11 @@ export const BuildingNode: React.FC<BuildingNodeProps> = ({ data, ghost }) => {
           Storage: {data.inventory ? Object.values(data.inventory).reduce((sum, v) => sum + v, 0) : 0} / {(config as any).capacity}
         </div>
       )}
-      {(config as any).productionRate && (
+      {(data.buildingType !== BuildingType.STORAGE) && (Object.keys(config.outputs || {}).length > 0 || Object.keys(config.inputs || {}).length > 0) && (
         <div className={styles.production}>
-          Production: {(config as any).productionRate}/s
+          {Object.entries(config.inputs || {}).map(([res, amt]) => `${amt} ${res}`).join(', ')}
+          {Object.keys(config.inputs || {}).length > 0 && Object.keys(config.outputs || {}).length > 0 ? ' → ' : ''}
+          {Object.entries(config.outputs || {}).map(([res, amt]) => `${amt} ${res}`).join(', ')} /s
         </div>
       )}
       {data.inventory && Object.keys(data.inventory).length > 0 && !(config as any).capacity && (
