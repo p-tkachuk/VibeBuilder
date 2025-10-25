@@ -89,6 +89,11 @@ export const BuildingPlacementHandler: React.FC<BuildingPlacementHandlerProps> =
                 resourceInventory.removeResources(buildingConfig.cost);
             }
 
+            // If storage building, increase capacity
+            if (selectedBuildingType === 'storage') {
+                resourceInventory.increaseStorageCapacity(1000);
+            }
+
             onBuildingPlaced(newNode);
         },
         [selectedBuildingType, resourceInventory, resourceFields, existingNodes, onBuildingPlaced, screenToFlowPosition, onShowToast]

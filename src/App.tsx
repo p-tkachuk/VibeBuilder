@@ -178,7 +178,7 @@ export default function App() {
           />
         </div>
         <div style={{ pointerEvents: 'auto' }}>
-          <ResourcePanel resources={resourceInventory.getInventory()} />
+          <ResourcePanel resources={resourceInventory.getInventory()} storageCapacity={resourceInventory.getStorageCapacity()} />
         </div>
       </div>
       <div style={{ position: 'relative', height: '100vh' }}>

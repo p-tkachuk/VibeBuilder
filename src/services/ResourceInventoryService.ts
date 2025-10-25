@@ -6,8 +6,10 @@ import { GAME_CONFIG } from '../config/game.config';
  */
 export class ResourceInventoryService {
     private inventory: Record<string, number> = {};
+    private storageCapacity: number;
 
     constructor() {
+        this.storageCapacity = GAME_CONFIG.storageCapacity;
         this.initializeStartingResources();
     }
 
@@ -31,7 +33,7 @@ export class ResourceInventoryService {
      * Get storage capacity
      */
     getStorageCapacity(): number {
-        return GAME_CONFIG.storageCapacity;
+        return this.storageCapacity;
     }
 
     /**
@@ -47,7 +49,7 @@ export class ResourceInventoryService {
     canAdd(resource: string, amount: number): boolean {
         const currentStored = this.getTotalStored();
         const newStored = currentStored + amount;
-        return newStored <= GAME_CONFIG.storageCapacity;
+        return newStored <= this.storageCapacity;
     }
 
     /**
@@ -59,7 +61,7 @@ export class ResourceInventoryService {
     addResource(resource: string, amount: number): { success: boolean; added: number } {
         if (!this.canAdd(resource, amount)) {
             // Calculate how much we can actually add
-            const availableSpace = GAME_CONFIG.storageCapacity - this.getTotalStored();
+            const availableSpace = this.storageCapacity - this.getTotalStored();
             amount = Math.min(amount, Math.max(0, availableSpace));
         }
 
@@ -95,5 +97,13 @@ export class ResourceInventoryService {
         });
 
         return true;
+    }
+
+    /**
+     * Increase storage capacity
+     * @param amount Amount to increase capacity by
+     */
+    increaseStorageCapacity(amount: number) {
+        this.storageCapacity += amount;
     }
 }
