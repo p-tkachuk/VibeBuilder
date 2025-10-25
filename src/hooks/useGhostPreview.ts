@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { useStore } from '@xyflow/react';
 import { BuildingType } from '../types/buildings';
-import { centerBuildingPosition } from '../utils/position.utils';
 import type { Position } from '../utils/position.utils';
 
 export interface GhostPreview {
@@ -26,11 +25,10 @@ export const useGhostPreview = (
 
         const [tx, ty, zoom] = transform;
 
-        // Calculate screen position for ghost building
-        const centeredPosition = centerBuildingPosition(mousePosition);
+        // Calculate screen position for ghost building center
         const ghostScreen = {
-            left: centeredPosition.x * zoom + tx,
-            top: centeredPosition.y * zoom + ty,
+            left: mousePosition.x * zoom + tx,
+            top: mousePosition.y * zoom + ty,
         };
 
         return {

@@ -23,11 +23,10 @@ export class BuildingPlacementService {
         if (buildingType === BuildingType.MINER) {
             // Convert screen coordinates to flow coordinates first
             const flowPosition = screenToFlowPosition(position);
-            // Snap to grid and center building to match the actual placement logic
+            // Snap to grid to match the actual placement logic
             const snappedPosition = snapToGrid(flowPosition);
-            const buildingCenter = centerBuildingPosition(snappedPosition);
 
-            if (!isPositionInResourceField(buildingCenter, resourceFields, ResourceType.IRON_ORE)) {
+            if (!isPositionInResourceField(snappedPosition, resourceFields, ResourceType.IRON_ORE)) {
                 return {
                     canPlace: false,
                     errorMessage: 'Miners can only be placed on iron ore fields!',
