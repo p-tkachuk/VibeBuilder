@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { ReactFlow, applyNodeChanges, applyEdgeChanges, addEdge, type Node, type Edge, type NodeChange, type EdgeChange, type Connection, type NodeTypes } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { BuildingMenu } from './components/BuildingMenu';
@@ -12,6 +12,7 @@ import { useResourceFields } from './hooks/useResourceFields';
 import { useBuildingPlacement } from './hooks/useBuildingPlacement';
 import { COLORS, BUILDING_WIDTH, BUILDING_HEIGHT } from './constants/game.constants';
 import { GAME_CONFIG } from './config/game.config';
+import { snapToGrid, getBuildingCenter } from './utils/position.utils';
 
 const initialNodes: Node[] = [
   {
@@ -53,6 +54,18 @@ export default function App() {
     clearSelection,
   } = useBuildingPlacement();
 
+  // Handle ESC key to cancel building placement
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && selectedBuildingType) {
+        clearSelection();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [selectedBuildingType, clearSelection]);
+
   const showToast = useCallback((message: string) => {
     setToastMessage(message);
   }, []);
@@ -71,8 +84,18 @@ export default function App() {
             return false;
           }
 
-          // For position changes, validate that building stays within map borders
+          // For position changes, snap to grid and validate that building stays within map borders
           if (change.type === 'position' && change.position) {
+            // Get the center of the building from the new position
+            const center = getBuildingCenter(change.position);
+            // Snap the center to grid
+            const snappedCenter = snapToGrid(center);
+            // Calculate new top-left position from snapped center
+            change.position = {
+              x: snappedCenter.x - BUILDING_WIDTH / 2,
+              y: snappedCenter.y - BUILDING_HEIGHT / 2,
+            };
+
             const { mapWidth, mapHeight } = GAME_CONFIG;
             const newX = change.position.x;
             const newY = change.position.y;
