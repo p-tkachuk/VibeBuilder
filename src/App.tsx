@@ -10,7 +10,7 @@ import { BuildingPlacementHandler } from './components/BuildingPlacementHandler'
 import { Toast } from './components/Toast';
 import { useResourceFields } from './hooks/useResourceFields';
 import { useBuildingPlacement } from './hooks/useBuildingPlacement';
-import { COLORS } from './constants/game.constants';
+import { COLORS, BUILDING_WIDTH, BUILDING_HEIGHT } from './constants/game.constants';
 import { GAME_CONFIG } from './config/game.config';
 
 const initialNodes: Node[] = [
@@ -66,7 +66,26 @@ export default function App() {
       // Filter out changes to resource nodes and map border since they shouldn't be modified
       const filteredChanges = changes.filter((change) => {
         if ('id' in change) {
-          return !resourceFields.some(field => field.id === change.id) && change.id !== 'map-border';
+          // Skip resource nodes and map border
+          if (resourceFields.some(field => field.id === change.id) || change.id === 'map-border') {
+            return false;
+          }
+
+          // For position changes, validate that building stays within map borders
+          if (change.type === 'position' && change.position) {
+            const { mapWidth, mapHeight } = GAME_CONFIG;
+            const newX = change.position.x;
+            const newY = change.position.y;
+
+            if (
+              newX < 0 ||
+              newY < 0 ||
+              newX + BUILDING_WIDTH > mapWidth ||
+              newY + BUILDING_HEIGHT > mapHeight
+            ) {
+              return false; // Reject position change that moves building outside border
+            }
+          }
         }
         return true;
       });

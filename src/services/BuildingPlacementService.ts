@@ -2,6 +2,7 @@ import type { Node } from '@xyflow/react';
 import { BuildingType, BUILDING_CONFIGS } from '../types/buildings';
 import { ResourceType } from '../types/terrain';
 import { BUILDING_WIDTH, BUILDING_HEIGHT } from '../constants/game.constants';
+import { GAME_CONFIG } from '../config/game.config';
 import { isPositionInResourceField, snapToGrid, centerBuildingPosition, doRectanglesOverlap } from '../utils/position.utils';
 import type { ResourceField } from '../types/terrain';
 import type { Position } from '../utils/position.utils';
@@ -50,6 +51,20 @@ export class BuildingPlacementService {
             return {
                 canPlace: false,
                 errorMessage: 'Cannot place building on top of another building!',
+            };
+        }
+
+        // Check if building is within map borders
+        const { mapWidth, mapHeight } = GAME_CONFIG;
+        if (
+            newBuildingPosition.x < 0 ||
+            newBuildingPosition.y < 0 ||
+            newBuildingPosition.x + BUILDING_WIDTH > mapWidth ||
+            newBuildingPosition.y + BUILDING_HEIGHT > mapHeight
+        ) {
+            return {
+                canPlace: false,
+                errorMessage: 'Cannot place building outside the map border!',
             };
         }
 
