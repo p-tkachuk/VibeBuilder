@@ -8,6 +8,7 @@ import { getBuildingCenter } from '../utils/position.utils';
 
 /**
  * Service for managing building operations like mining and production
+ * Follows Single Responsibility Principle by separating mining and production logic
  */
 export class BuildingOperationService {
     /**
@@ -18,133 +19,131 @@ export class BuildingOperationService {
      * @returns Updated nodes with modified inventories
      */
     static processBuildings(nodes: Node[], edges: Edge[], resourceFields: ResourceField[]): Node[] {
-        const updatedInventories: Record<string, Record<string, number>> = {};
+        let updatedInventories: Record<string, Record<string, number>> = {};
 
-        // First pass: process mining
-        nodes.forEach(node => {
-            if (node.type !== 'building') return;
+        // Process mining operations
+        updatedInventories = { ...updatedInventories, ...this.processMiningOperations(nodes, edges, resourceFields) };
 
-            const data = node.data as unknown as BuildingNodeData;
-            const config = BUILDING_CONFIGS[data.buildingType];
+        // Process production operations
+        updatedInventories = { ...updatedInventories, ...this.processProductionOperations(nodes, edges, updatedInventories) };
 
-            // Mining logic for miners
-            if (data.buildingType === BuildingType.IRON_MINER ||
-                data.buildingType === BuildingType.COPPER_MINER ||
-                data.buildingType === BuildingType.COAL_MINER ||
-                data.buildingType === BuildingType.STONE_MINER) {
+        return this.applyInventoryUpdates(nodes, updatedInventories);
+    }
 
-                // Check if output is connected
-                const outputEdge = edges.find(edge => edge.source === node.id && edge.sourceHandle === 'output-0');
-                if (!outputEdge) {
-                    return;
-                }
+    /**
+     * Process mining operations for mining buildings
+     */
+    private static processMiningOperations(nodes: Node[], edges: Edge[], resourceFields: ResourceField[]): Record<string, Record<string, number>> {
+        const inventoryUpdates: Record<string, Record<string, number>> = {};
 
-                // Determine resource type
-                let resourceType: ResourceType;
-                switch (data.buildingType) {
-                    case BuildingType.IRON_MINER:
-                        resourceType = ResourceType.IRON_ORE;
-                        break;
-                    case BuildingType.COPPER_MINER:
-                        resourceType = ResourceType.COPPER_ORE;
-                        break;
-                    case BuildingType.COAL_MINER:
-                        resourceType = ResourceType.COAL;
-                        break;
-                    case BuildingType.STONE_MINER:
-                        resourceType = ResourceType.STONE;
-                        break;
-                }
+        const miningBuildings = nodes.filter(node => node.type === 'building' && this.isMiningBuilding(node));
 
-                // Check if placed over resource field
-                const center = getBuildingCenter(node.position);
-                if (!isPositionInResourceField(center, resourceFields, resourceType)) {
-                    return;
-                }
+        miningBuildings.forEach(node => this.processSingleMiningOperation(node, nodes, edges, resourceFields, inventoryUpdates));
 
-                // Add 2 resources to connected building's inventory
-                const connectedNodeId = outputEdge.target;
-                const connectedNode = nodes.find(n => n.id === connectedNodeId);
-                if (!connectedNode || connectedNode.type !== 'building') {
-                    return;
-                }
-                const connectedData = connectedNode.data as unknown as BuildingNodeData;
-                const connectedConfig = BUILDING_CONFIGS[connectedData.buildingType];
-                const currentInventory = updatedInventories[connectedNodeId] || connectedData.inventory || {};
-                const currentTotal = Object.values(currentInventory).reduce((sum, v) => sum + v, 0);
-                let amount = 2;
-                if ((connectedConfig as any).capacity !== undefined) {
-                    amount = Math.min(amount, Math.max(0, (connectedConfig as any).capacity - currentTotal));
-                }
-                if (amount > 0) {
-                    updatedInventories[connectedNodeId] = {
-                        ...currentInventory,
-                        [resourceType]: (currentInventory[resourceType] || 0) + amount
-                    };
-                }
-            }
-        });
+        return inventoryUpdates;
+    }
 
-        // Second pass: process production
-        nodes.forEach(node => {
-            if (node.type !== 'building') return;
+    /**
+     * Process a single mining operation
+     */
+    private static processSingleMiningOperation(
+        minerNode: Node,
+        allNodes: Node[],
+        edges: Edge[],
+        resourceFields: ResourceField[],
+        inventoryUpdates: Record<string, Record<string, number>>
+    ): void {
+        const buildingType = minerNode.data.buildingType as BuildingType;
 
-            const data = node.data as unknown as BuildingNodeData;
-            const config = BUILDING_CONFIGS[data.buildingType];
+        // Check if output is connected
+        const outputEdge = edges.find(edge => edge.source === minerNode.id);
+        if (!outputEdge) return;
 
-            // Production logic for smelter
-            if (data.buildingType === BuildingType.SMELTER) {
-                // Check if output is connected
-                const outputEdge = edges.find(edge => edge.source === node.id && edge.sourceHandle === 'output-0');
-                if (!outputEdge) return;
+        const resourceType = this.getResourceTypeForMiner(buildingType);
+        const center = getBuildingCenter(minerNode.position);
 
-                // Check if input is connected
-                const inputEdge = edges.find(edge => edge.target === node.id && edge.targetHandle === 'input');
-                if (!inputEdge) return;
+        // Check if placed over resource field
+        if (!isPositionInResourceField(center, resourceFields, resourceType)) return;
 
-                const inputNode = nodes.find(n => n.id === inputEdge.source);
-                if (!inputNode || inputNode.type !== 'building') return;
+        // Add to connected building's inventory
+        this.addResourceToConnectedBuilding(outputEdge.target, allNodes, resourceType, 2, inventoryUpdates);
+    }
 
-                const inputData = inputNode.data as unknown as BuildingNodeData;
-                const inputInventory = updatedInventories[inputNode.id] || inputData.inventory || {};
+    /**
+     * Process production operations for production buildings
+     */
+    private static processProductionOperations(
+        nodes: Node[],
+        edges: Edge[],
+        existingUpdates: Record<string, Record<string, number>>
+    ): Record<string, Record<string, number>> {
+        const inventoryUpdates: Record<string, Record<string, number>> = {};
 
-                // Check if there's enough iron-ore
-                if ((inputInventory['iron-ore'] || 0) < 1) return;
+        const productionBuildings = nodes.filter(node => node.type === 'building' && this.isProductionBuilding(node));
 
-                // Consume iron-ore
-                updatedInventories[inputNode.id] = {
-                    ...inputInventory,
-                    'iron-ore': inputInventory['iron-ore'] - 1
-                };
+        productionBuildings.forEach(node => this.processSingleProductionOperation(node, nodes, edges, inventoryUpdates, existingUpdates));
 
-                // Produce iron-plate to connected building
-                const outputConnectedNodeId = outputEdge.target;
-                const outputConnectedNode = nodes.find(n => n.id === outputConnectedNodeId);
-                if (!outputConnectedNode || outputConnectedNode.type !== 'building') return;
+        return inventoryUpdates;
+    }
 
-                const outputData = outputConnectedNode.data as unknown as BuildingNodeData;
-                const outputConfig = BUILDING_CONFIGS[outputData.buildingType];
-                const outputInventory = updatedInventories[outputConnectedNodeId] || outputData.inventory || {};
-                const outputCurrentTotal = Object.values(outputInventory).reduce((sum, v) => sum + v, 0);
-                let prodAmount = 1;
-                if ((outputConfig as any).capacity !== undefined) {
-                    prodAmount = Math.min(prodAmount, Math.max(0, (outputConfig as any).capacity - outputCurrentTotal));
-                }
-                if (prodAmount > 0) {
-                    updatedInventories[outputConnectedNodeId] = {
-                        ...outputInventory,
-                        'iron-plate': (outputInventory['iron-plate'] || 0) + prodAmount
-                    };
-                }
-            }
-        });
+    /**
+     * Process a single production operation
+     */
+    private static processSingleProductionOperation(
+        producerNode: Node,
+        allNodes: Node[],
+        edges: Edge[],
+        inventoryUpdates: Record<string, Record<string, number>>,
+        existingUpdates: Record<string, Record<string, number>>
+    ): void {
+        // Check output connections
+        const outputEdges = edges.filter(edge => edge.source === producerNode.id);
+        if (outputEdges.length === 0) return;
 
-        // Return updated nodes
+        // Check input connections
+        const inputEdges = edges.filter(edge => edge.target === producerNode.id);
+        if (inputEdges.length === 0) return;
+
+        // Process based on building type
+        if (producerNode.data.buildingType === BuildingType.SMELTER) {
+            this.processSmeltingOperation(allNodes, inputEdges, outputEdges, inventoryUpdates, existingUpdates);
+        }
+    }
+
+    /**
+     * Process smelting operation for smelters
+     */
+    private static processSmeltingOperation(
+        /* smelterNode: Node, */
+        allNodes: Node[],
+        inputEdges: Edge[],
+        outputEdges: Edge[],
+        inventoryUpdates: Record<string, Record<string, number>>,
+        existingUpdates: Record<string, Record<string, number>>
+    ): void {
+        const inputNode = allNodes.find(n => n.id === inputEdges[0].source);
+        if (!inputNode || inputNode.type !== 'building') return;
+
+        const inputInventory = existingUpdates[inputNode.id] || (inputNode.data as unknown as BuildingNodeData).inventory || {};
+
+        if ((inputInventory['iron-ore'] || 0) < 1) return;
+
+        // Consume input
+        this.deductResourceFromNode(inputNode.id, 'iron-ore', 1, inventoryUpdates);
+
+        // Produce output
+        this.addResourceToConnectedBuilding(outputEdges[0].target, allNodes, 'iron-plate', 1, inventoryUpdates);
+    }
+
+    /**
+     * Apply inventory updates to nodes
+     */
+    private static applyInventoryUpdates(nodes: Node[], inventoryUpdates: Record<string, Record<string, number>>): Node[] {
         return nodes.map(node => {
             if (node.type !== 'building') return node;
 
-            const data = node.data as unknown as BuildingNodeData;
-            const updatedInventory = updatedInventories[node.id] || data.inventory || {};
+            const { id, data } = node;
+            const updatedInventory = inventoryUpdates[id] || (data as unknown as BuildingNodeData).inventory || {};
 
             return {
                 ...node,
@@ -154,5 +153,75 @@ export class BuildingOperationService {
                 }
             };
         });
+    }
+
+    /**
+     * Helper methods for type checking and resource handling
+     */
+    private static isMiningBuilding(node: Node): boolean {
+        const buildingType = node.data.buildingType as BuildingType;
+        return [
+            BuildingType.IRON_MINER,
+            BuildingType.COPPER_MINER,
+            BuildingType.COAL_MINER,
+            BuildingType.STONE_MINER
+        ].includes(buildingType);
+    }
+
+    private static isProductionBuilding(node: Node): boolean {
+        const buildingType = node.data.buildingType as BuildingType;
+        return [BuildingType.SMELTER, BuildingType.ASSEMBLER].includes(buildingType);
+    }
+
+    private static getResourceTypeForMiner(buildingType: BuildingType): ResourceType {
+        const mapping: Record<string, ResourceType> = {
+            [BuildingType.IRON_MINER]: ResourceType.IRON_ORE,
+            [BuildingType.COPPER_MINER]: ResourceType.COPPER_ORE,
+            [BuildingType.COAL_MINER]: ResourceType.COAL,
+            [BuildingType.STONE_MINER]: ResourceType.STONE,
+        };
+        return mapping[buildingType];
+    }
+
+    private static addResourceToConnectedBuilding(
+        /* sourceNodeId: string, */
+        targetNodeId: string,
+        allNodes: Node[],
+        resourceType: string,
+        amount: number,
+        inventoryUpdates: Record<string, Record<string, number>>
+    ): void {
+        const targetNode = allNodes.find(n => n.id === targetNodeId);
+        if (!targetNode || targetNode.type !== 'building') return;
+
+        const config = BUILDING_CONFIGS[targetNode.data.buildingType as BuildingType];
+        const currentInventory = inventoryUpdates[targetNodeId] || (targetNode.data as unknown as BuildingNodeData).inventory || {};
+        const currentTotal = Object.values(currentInventory).reduce((sum, v) => sum + v, 0);
+
+        let adjustedAmount = amount;
+        const capacity = (config as any).capacity;
+        if (capacity !== undefined && currentTotal >= capacity) {
+            const availableSpace = capacity - currentTotal;
+            adjustedAmount = Math.min(amount, availableSpace);
+        }
+
+        if (adjustedAmount > 0) {
+            inventoryUpdates[targetNodeId] = {
+                ...currentInventory,
+                [resourceType]: (currentInventory[resourceType] || 0) + adjustedAmount
+            };
+        }
+    }
+
+    private static deductResourceFromNode(
+        nodeId: string,
+        resourceType: string,
+        amount: number,
+        inventoryUpdates: Record<string, Record<string, number>>
+    ): void {
+        inventoryUpdates[nodeId] = {
+            ...inventoryUpdates[nodeId] || {},
+            [resourceType]: Math.max(0, ((inventoryUpdates[nodeId] || {})[resourceType] || 0) - amount)
+        };
     }
 }

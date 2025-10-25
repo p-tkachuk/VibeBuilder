@@ -46,7 +46,7 @@ export class ResourceInventoryService {
     /**
      * Check if can add resources without exceeding storage
      */
-    canAdd(resource: string, amount: number): boolean {
+    canAdd(/* resource: string, */ amount: number): boolean {
         const currentStored = this.getTotalStored();
         const newStored = currentStored + amount;
         return newStored <= this.storageCapacity;
@@ -59,7 +59,7 @@ export class ResourceInventoryService {
      * @returns Success status and actual amount added
      */
     addResource(resource: string, amount: number): { success: boolean; added: number } {
-        if (!this.canAdd(resource, amount)) {
+        if (!this.canAdd(amount)) {
             // Calculate how much we can actually add
             const availableSpace = this.storageCapacity - this.getTotalStored();
             amount = Math.min(amount, Math.max(0, availableSpace));

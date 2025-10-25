@@ -35,6 +35,8 @@ export const GhostPreview: React.FC<GhostPreviewProps> = ({
                 data={{
                     buildingType: selectedBuildingType,
                     label: BUILDING_CONFIGS[selectedBuildingType].name,
+                    id: 'ghost',
+                    edges: [],
                 }}
                 ghost
             />

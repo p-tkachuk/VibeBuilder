@@ -12,11 +12,12 @@ import { BuildingType } from './types/buildings';
 import { Toast } from './components/Toast';
 import { useResourceFields } from './hooks/useResourceFields';
 import { useBuildingPlacement } from './hooks/useBuildingPlacement';
-import { COLORS, BUILDING_WIDTH, BUILDING_HEIGHT } from './constants/game.constants';
+import { useKeyboardActions } from './hooks/useKeyboardActions';
+import { COLORS } from './constants/game.constants';
 import { GAME_CONFIG } from './config/game.config';
-import { snapToGrid, getBuildingCenter, doRectanglesOverlap } from './utils/position.utils';
 import { ResourceInventoryService } from './services/ResourceInventoryService';
 import { BuildingOperationService } from './services/BuildingOperationService';
+import { NodeValidationService } from './services/NodeValidationService';
 
 const initialNodes: Node[] = [
   {
@@ -58,6 +59,21 @@ export default function App() {
     handleBuildingSelect,
     clearSelection,
   } = useBuildingPlacement();
+  const handleDeleteSelected = useCallback(() => {
+    setNodes((nds) => {
+      // Count storage buildings being deleted
+      const deletedStorageBuildings = nds.filter((n) => n.selected && n.type === 'building' && n.data.buildingType === BuildingType.STORAGE);
+      if (deletedStorageBuildings.length > 0) {
+        // Decrease storage capacity by 1000 per deleted storage building
+        resourceInventory.decreaseStorageCapacity(deletedStorageBuildings.length * 1000);
+      }
+      return nds.filter((n) => !n.selected);
+    });
+    setEdges((eds) => eds.filter((e) => !e.selected));
+  }, [setNodes, setEdges, resourceInventory]);
+
+  // Handle keyboard actions
+  useKeyboardActions(selectedBuildingType, clearSelection, handleDeleteSelected);
 
   const allNodes = useMemo(() => [
     ...resourceNodes,
@@ -80,38 +96,6 @@ export default function App() {
     return totals;
   }, [nodes, resourceInventory]);
 
-  // Handle ESC key to cancel building placement
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && selectedBuildingType) {
-        clearSelection();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [selectedBuildingType, clearSelection]);
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Delete') {
-        setNodes((nds) => {
-          // Count storage buildings being deleted
-          const deletedStorageBuildings = nds.filter((n) => n.selected && n.type === 'building' && n.data.buildingType === BuildingType.STORAGE);
-          if (deletedStorageBuildings.length > 0) {
-            // Decrease storage capacity by 1000 per deleted storage building
-            resourceInventory.decreaseStorageCapacity(deletedStorageBuildings.length * 1000);
-          }
-          return nds.filter((n) => !n.selected);
-        });
-        setEdges((eds) => eds.filter((e) => !e.selected));
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [setNodes, setEdges, resourceInventory]);
-
   // Building operations ticker
   useEffect(() => {
     const interval = setInterval(() => {
@@ -130,71 +114,11 @@ export default function App() {
 
   const onNodesChangeWrapper = useCallback(
     (changes: NodeChange[]) => {
-      // Filter out changes to resource nodes and map border since they shouldn't be modified
-      const filteredChanges = changes.filter((change) => {
-        if ('id' in change) {
-          // Skip resource nodes and map border
-          if (resourceFields.some(field => field.id === change.id) || change.id === 'map-border') {
-            return false;
-          }
-
-          // For position changes, snap to grid and validate that building stays within map borders
-          if (change.type === 'position' && change.position) {
-            // Get the center of the building from the new position
-            const center = getBuildingCenter(change.position);
-            // Snap the center to grid
-            const snappedCenter = snapToGrid(center);
-            // Calculate new top-left position from snapped center
-            change.position = {
-              x: snappedCenter.x - BUILDING_WIDTH / 2,
-              y: snappedCenter.y - BUILDING_HEIGHT / 2,
-            };
-
-            const { mapWidth, mapHeight } = GAME_CONFIG;
-            const newX = change.position.x;
-            const newY = change.position.y;
-
-            if (
-              newX < 0 ||
-              newY < 0 ||
-              newX + BUILDING_WIDTH > mapWidth ||
-              newY + BUILDING_HEIGHT > mapHeight
-            ) {
-              return false; // Reject position change that moves building outside border
-            }
-
-            // Check for collision with other buildings
-            const proposedRect = {
-              x: newX,
-              y: newY,
-              width: BUILDING_WIDTH,
-              height: BUILDING_HEIGHT,
-            };
-
-            //console.log(change.id, proposedRect);
-            const hasCollision = allNodes.some((node) => {
-              //console.log(node.id);
-              if (node.id === (change as any).id) return false; // Don't check against itself
-              if (node.type !== 'building') return false;
-              const existingRect = {
-                x: node.position.x,
-                y: node.position.y,
-                width: BUILDING_WIDTH,
-                height: BUILDING_HEIGHT,
-              };
-              //console.log(node.id, existingRect);
-              return doRectanglesOverlap(proposedRect, existingRect);
-            });
-
-            if (hasCollision) {
-              return false; // Reject position change that would cause collision
-            }
-          }
-        }
-        return true;
-      });
-
-      // Call the hook's onNodesChange with filtered changes
+      const filteredChanges = NodeValidationService.processNodeChanges(
+        changes,
+        resourceFields,
+        allNodes
+      );
       onNodesChange(filteredChanges);
     },
     [resourceFields, allNodes, onNodesChange],
