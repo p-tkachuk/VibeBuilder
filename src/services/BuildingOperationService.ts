@@ -18,7 +18,6 @@ export class BuildingOperationService {
      * @returns Updated nodes with modified inventories
      */
     static processBuildings(nodes: Node[], edges: Edge[], resourceFields: ResourceField[]): Node[] {
-        console.log('Total edges:', edges.length, 'edges:', edges);
         const updatedInventories: Record<string, Record<string, number>> = {};
 
         // First pass: process mining
@@ -34,15 +33,11 @@ export class BuildingOperationService {
                 data.buildingType === BuildingType.COAL_MINER ||
                 data.buildingType === BuildingType.STONE_MINER) {
 
-                console.log(`Processing miner ${node.id}`);
-
                 // Check if output is connected
                 const outputEdge = edges.find(edge => edge.source === node.id && edge.sourceHandle === 'output-0');
                 if (!outputEdge) {
-                    console.log('No output edge');
                     return;
                 }
-                console.log(`Output to ${outputEdge.target}`);
 
                 // Determine resource type
                 let resourceType: ResourceType;
@@ -63,9 +58,7 @@ export class BuildingOperationService {
 
                 // Check if placed over resource field
                 const center = getBuildingCenter(node.position);
-                console.log(`center: ${center.x}, ${center.y}`);
                 if (!isPositionInResourceField(center, resourceFields, resourceType)) {
-                    console.log('Not over resource');
                     return;
                 }
 
@@ -73,17 +66,22 @@ export class BuildingOperationService {
                 const connectedNodeId = outputEdge.target;
                 const connectedNode = nodes.find(n => n.id === connectedNodeId);
                 if (!connectedNode || connectedNode.type !== 'building') {
-                    console.log('Connected node not found or not building');
                     return;
                 }
-
-                console.log(`Mining 2 ${resourceType} to ${connectedNodeId}`);
                 const connectedData = connectedNode.data as unknown as BuildingNodeData;
+                const connectedConfig = BUILDING_CONFIGS[connectedData.buildingType];
                 const currentInventory = updatedInventories[connectedNodeId] || connectedData.inventory || {};
-                updatedInventories[connectedNodeId] = {
-                    ...currentInventory,
-                    [resourceType]: (currentInventory[resourceType] || 0) + 2
-                };
+                const currentTotal = Object.values(currentInventory).reduce((sum, v) => sum + v, 0);
+                let amount = 2;
+                if ((connectedConfig as any).capacity !== undefined) {
+                    amount = Math.min(amount, Math.max(0, (connectedConfig as any).capacity - currentTotal));
+                }
+                if (amount > 0) {
+                    updatedInventories[connectedNodeId] = {
+                        ...currentInventory,
+                        [resourceType]: (currentInventory[resourceType] || 0) + amount
+                    };
+                }
             }
         });
 
@@ -125,11 +123,19 @@ export class BuildingOperationService {
                 if (!outputConnectedNode || outputConnectedNode.type !== 'building') return;
 
                 const outputData = outputConnectedNode.data as unknown as BuildingNodeData;
+                const outputConfig = BUILDING_CONFIGS[outputData.buildingType];
                 const outputInventory = updatedInventories[outputConnectedNodeId] || outputData.inventory || {};
-                updatedInventories[outputConnectedNodeId] = {
-                    ...outputInventory,
-                    'iron-plate': (outputInventory['iron-plate'] || 0) + 1
-                };
+                const outputCurrentTotal = Object.values(outputInventory).reduce((sum, v) => sum + v, 0);
+                let prodAmount = 1;
+                if ((outputConfig as any).capacity !== undefined) {
+                    prodAmount = Math.min(prodAmount, Math.max(0, (outputConfig as any).capacity - outputCurrentTotal));
+                }
+                if (prodAmount > 0) {
+                    updatedInventories[outputConnectedNodeId] = {
+                        ...outputInventory,
+                        'iron-plate': (outputInventory['iron-plate'] || 0) + prodAmount
+                    };
+                }
             }
         });
 

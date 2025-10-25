@@ -1,3 +1,5 @@
+import { GAME_CONFIG } from "../config/game.config";
+
 export interface Building {
   id: string;
   type: BuildingType;
@@ -90,6 +92,7 @@ export const BUILDING_CONFIGS = {
     icon: '📦',
     inputs: ['any'],
     outputs: ['any'],
-    cost: { stone: 10 }
+    cost: { stone: 10 },
+    capacity: GAME_CONFIG.storageCapacity
   }
 };
