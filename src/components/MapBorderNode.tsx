@@ -1,6 +1,5 @@
 import React from 'react';
 import { GAME_CONFIG } from '../config/game.config';
-import styles from './MapBorderNode.module.css';
 
 /**
  * MapBorderNode component - displays a "do not cross" tape border as a ReactFlow node

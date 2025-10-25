@@ -21,7 +21,9 @@ export const RESOURCE_COLORS = {
   [ResourceType.IRON_ORE]: '#8B4513',
   [ResourceType.COAL]: '#2F2F2F',
   [ResourceType.COPPER_ORE]: '#CD7F32',
-  [ResourceType.STONE]: '#A9A9A9'
+  [ResourceType.STONE]: '#A9A9A9',
+  [ResourceType.IRON_PLATE]: '#696969',
+  [ResourceType.IRON_GEAR]: '#808080'
 };
 
 export const RESOURCE_PATTERNS = {
