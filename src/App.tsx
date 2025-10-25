@@ -13,7 +13,7 @@ import { useResourceFields } from './hooks/useResourceFields';
 import { useBuildingPlacement } from './hooks/useBuildingPlacement';
 import { COLORS, BUILDING_WIDTH, BUILDING_HEIGHT } from './constants/game.constants';
 import { GAME_CONFIG } from './config/game.config';
-import { snapToGrid, getBuildingCenter } from './utils/position.utils';
+import { snapToGrid, getBuildingCenter, doRectanglesOverlap } from './utils/position.utils';
 import { ResourceType } from './types/terrain';
 
 const initialNodes: Node[] = [
@@ -58,6 +58,8 @@ export default function App() {
     handleBuildingSelect,
     clearSelection,
   } = useBuildingPlacement();
+
+  const allNodes = useMemo(() => [...resourceNodes, ...nodes], [resourceNodes, nodes]);
 
   // Handle ESC key to cancel building placement
   useEffect(() => {
@@ -113,13 +115,42 @@ export default function App() {
             ) {
               return false; // Reject position change that moves building outside border
             }
+
+            // Check for collision with other buildings
+            const proposedRect = {
+              x: newX,
+              y: newY,
+              width: BUILDING_WIDTH,
+              height: BUILDING_HEIGHT,
+            };
+
+            //console.log(change.id, proposedRect);
+            const hasCollision = allNodes.some((node) => {
+              //console.log(node.id);
+              if (node.id === (change as any).id) return false; // Don't check against itself
+              if (node.type !== 'building') return false;
+              const existingRect = {
+                x: node.position.x,
+                y: node.position.y,
+                width: BUILDING_WIDTH,
+                height: BUILDING_HEIGHT,
+              };
+              //console.log(node.id, existingRect);
+              return doRectanglesOverlap(proposedRect, existingRect);
+            });
+
+            console.log(change.id, hasCollision);
+
+            if (hasCollision) {
+              return false; // Reject position change that would cause collision
+            }
           }
         }
         return true;
       });
       setNodes((nodesSnapshot) => applyNodeChanges(filteredChanges, nodesSnapshot));
     },
-    [resourceFields],
+    [resourceFields, allNodes],
   );
 
   const onEdgesChange = useCallback(
@@ -136,8 +167,6 @@ export default function App() {
     setNodes((nds) => [...nds, newNode]);
     clearSelection(); // Clear selection after placement
   }, [clearSelection]);
-
-  const allNodes = useMemo(() => [...resourceNodes, ...nodes], [resourceNodes, nodes]);
 
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
