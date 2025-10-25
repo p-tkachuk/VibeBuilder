@@ -58,7 +58,14 @@ export default function App() {
     clearSelection,
   } = useBuildingPlacement();
 
-  const allNodes = useMemo(() => [...resourceNodes, ...nodes], [resourceNodes, nodes]);
+  const allNodes = useMemo(() => [
+    ...resourceNodes,
+    ...nodes.map(node =>
+      node.type === 'building'
+        ? { ...node, data: { ...node.data, id: node.id, edges } }
+        : node
+    ),
+  ], [resourceNodes, nodes, edges]);
 
   // Handle ESC key to cancel building placement
   useEffect(() => {
@@ -190,6 +197,12 @@ export default function App() {
           onConnect={onConnect}
           nodeTypes={nodeTypes as NodeTypes}
           fitView
+          defaultEdgeOptions={{
+            style: {
+              stroke: '#00FFFF',
+              strokeWidth: 2,
+            },
+          }}
           style={{ backgroundColor: COLORS.TERRAIN_PRIMARY }}
         >
           <TerrainOverlay />

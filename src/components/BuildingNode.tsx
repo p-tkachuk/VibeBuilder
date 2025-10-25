@@ -1,11 +1,14 @@
 import React from 'react';
 import { Handle, Position } from '@xyflow/react';
+import type { Edge } from '@xyflow/react';
 import { BuildingType, BUILDING_CONFIGS } from '../types/buildings';
 import styles from './BuildingNode.module.css';
 
 export interface BuildingNodeData {
   buildingType: BuildingType;
   label: string;
+  id: string;
+  edges: Edge[];
 }
 
 interface BuildingNodeProps {
@@ -21,33 +24,41 @@ interface BuildingNodeProps {
 export const BuildingNode: React.FC<BuildingNodeProps> = ({ data, ghost }) => {
   const config = BUILDING_CONFIGS[data.buildingType];
 
-  const renderHandle = (type: 'target' | 'source', position: Position, key?: number) => (
+  const renderHandle = (id: string, type: 'target' | 'source', position: Position, isConnected: boolean) => (
     <Handle
-      key={key}
+      key={id}
+      id={id}
       type={type}
       position={position}
-      className={styles.handle}
+      className={`${styles.handle} ${isConnected ? (type === 'target' ? styles["connected-input"] : styles["connected-output"]) : styles.unconnected}`}
     />
   );
 
   const renderInputHandles = () => {
     if (config.inputs.length === 0 || ghost) return null;
 
-    return renderHandle('target', Position.Left);
+    const handleId = 'input';
+    const isConnected = data.edges.some(edge => edge.target === data.id && edge.targetHandle === handleId);
+
+    return renderHandle(handleId, 'target', Position.Left, isConnected);
   };
 
   const renderOutputHandles = () => {
     if (config.outputs.length === 0 || ghost) return null;
 
     return config.outputs.map((_, index) => {
+      const handleId = `output-${index}`;
+      const isConnected = data.edges.some(edge => edge.source === data.id && edge.sourceHandle === handleId);
+
       if (config.outputs.length === 1) {
-        return renderHandle('source', Position.Right, index);
+        return renderHandle(handleId, 'source', Position.Right, isConnected);
       } else {
         // For splitters, place outputs on top and bottom
         return renderHandle(
+          handleId,
           'source',
           index === 0 ? Position.Top : Position.Bottom,
-          index
+          isConnected
         );
       }
     });

@@ -25,7 +25,36 @@
 }
 
 .handle {
-    background-color: #555;
     width: 8px;
     height: 8px;
+    border: 1px solid white;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.connected-input {
+    background-color: #0000ff;
+    animation: pulse 1s infinite;
+}
+
+.connected-output {
+    background-color: #00ff00;
+    animation: pulse 1s infinite;
+}
+
+.unconnected {
+    background-color: #ff0000;
+    animation: pulse 1s infinite;
 }
