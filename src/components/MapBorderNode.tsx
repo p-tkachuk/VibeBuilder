@@ -1,11 +1,20 @@
 import React from 'react';
 import { GAME_CONFIG } from '../config/game.config';
 
+interface MapBorderNodeData {
+    mapWidth: number;
+    mapHeight: number;
+}
+
+interface MapBorderNodeProps {
+    data: MapBorderNodeData;
+}
+
 /**
  * MapBorderNode component - displays a "do not cross" tape border as a ReactFlow node
  * Follows Single Responsibility Principle - only handles map border rendering
  */
-export const MapBorderNode: React.FC = () => {
+export const MapBorderNode: React.FC<MapBorderNodeProps> = ({ data }) => {
     const { mapWidth, mapHeight } = GAME_CONFIG;
     const borderWidth = 20; // Width of the border tape
 

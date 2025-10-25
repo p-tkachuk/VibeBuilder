@@ -4,19 +4,35 @@ import '@xyflow/react/dist/style.css';
 import { BuildingMenu } from './components/BuildingMenu';
 import { BuildingNode } from './components/BuildingNode';
 import { ResourceNode } from './components/ResourceNode';
+import { MapBorderNode } from './components/MapBorderNode';
 import { TerrainOverlay } from './components/TerrainOverlay';
 import { BuildingPlacementHandler } from './components/BuildingPlacementHandler';
 import { Toast } from './components/Toast';
 import { useResourceFields } from './hooks/useResourceFields';
 import { useBuildingPlacement } from './hooks/useBuildingPlacement';
 import { COLORS } from './constants/game.constants';
+import { GAME_CONFIG } from './config/game.config';
 
-const initialNodes: Node[] = [];
+const initialNodes: Node[] = [
+  {
+    id: 'map-border',
+    type: 'mapBorder',
+    position: { x: 0, y: 0 },
+    data: {
+      mapWidth: GAME_CONFIG.mapWidth,
+      mapHeight: GAME_CONFIG.mapHeight,
+    },
+    draggable: false,
+    selectable: false,
+    deletable: false,
+  },
+];
 const initialEdges: Edge[] = [];
 
 const nodeTypes = {
   building: BuildingNode,
   resource: ResourceNode,
+  mapBorder: MapBorderNode,
 };
 
 /**
@@ -47,10 +63,10 @@ export default function App() {
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
-      // Filter out changes to resource nodes since they shouldn't be modified
+      // Filter out changes to resource nodes and map border since they shouldn't be modified
       const filteredChanges = changes.filter((change) => {
         if ('id' in change) {
-          return !resourceFields.some(field => field.id === change.id);
+          return !resourceFields.some(field => field.id === change.id) && change.id !== 'map-border';
         }
         return true;
       });
