@@ -68,6 +68,5 @@ export const GAME_CONFIG: GameConfig = {
     // Starting resources
     startingResources: {
         stone: 100,
-        'copper-ore': 100,
     },
 };
