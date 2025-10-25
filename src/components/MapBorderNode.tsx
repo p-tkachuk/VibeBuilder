@@ -1,5 +1,6 @@
 import React from 'react';
 import { GAME_CONFIG } from '../config/game.config';
+import styles from './MapBorderNode.module.css';
 
 /**
  * MapBorderNode component - displays a "do not cross" tape border as a ReactFlow node
@@ -9,11 +10,20 @@ export const MapBorderNode: React.FC = () => {
     const { mapWidth, mapHeight } = GAME_CONFIG;
     const borderWidth = 20; // Width of the border tape
 
-    const borderStyle: React.CSSProperties = {
+    const horizontalBorderStyle: React.CSSProperties = {
         position: 'absolute',
-        background: `repeating-linear-gradient(45deg, #000000 0px, #000000 10px, #FFD700 10px, #FFD700 20px)`,
+        background: `repeating-linear-gradient(45deg, rgba(0,0,0,0.5) 0px, rgba(0,0,0,0.5) 10px, rgba(255,215,0,0.7) 10px, rgba(255,215,0,0.7) 20px)`,
         pointerEvents: 'none',
         zIndex: 9999, // Very high z-index to ensure visibility
+        animation: 'borderAnimation 10s linear infinite',
+    };
+
+    const verticalBorderStyle: React.CSSProperties = {
+        position: 'absolute',
+        background: `repeating-linear-gradient(135deg, rgba(0,0,0,0.5) 0px, rgba(0,0,0,0.5) 10px, rgba(255,215,0,0.7) 10px, rgba(255,215,0,0.7) 20px)`,
+        pointerEvents: 'none',
+        zIndex: 9999, // Very high z-index to ensure visibility
+        animation: 'borderAnimationVertical 10s linear infinite',
     };
 
     return (
@@ -28,7 +38,7 @@ export const MapBorderNode: React.FC = () => {
             {/* Top border */}
             <div
                 style={{
-                    ...borderStyle,
+                    ...horizontalBorderStyle,
                     top: -borderWidth,
                     left: -borderWidth,
                     width: mapWidth + 2 * borderWidth,
@@ -39,7 +49,7 @@ export const MapBorderNode: React.FC = () => {
             {/* Bottom border */}
             <div
                 style={{
-                    ...borderStyle,
+                    ...horizontalBorderStyle,
                     top: mapHeight,
                     left: -borderWidth,
                     width: mapWidth + 2 * borderWidth,
@@ -50,7 +60,7 @@ export const MapBorderNode: React.FC = () => {
             {/* Left border */}
             <div
                 style={{
-                    ...borderStyle,
+                    ...verticalBorderStyle,
                     top: -borderWidth,
                     left: -borderWidth,
                     width: borderWidth,
@@ -61,7 +71,7 @@ export const MapBorderNode: React.FC = () => {
             {/* Right border */}
             <div
                 style={{
-                    ...borderStyle,
+                    ...verticalBorderStyle,
                     top: -borderWidth,
                     left: mapWidth,
                     width: borderWidth,
