@@ -96,7 +96,7 @@ export const BUILDING_CONFIGS = {
     inputs: { 'any': 2 },
     outputs: { 'any-0': 1, 'any-1': 1 },
     cost: { 'iron-plate': 5, 'copper-ore': 5 },
-    specialty: BuildingSpecialty.FACTORY
+    specialty: BuildingSpecialty.UTILITY
   },
   [BuildingType.STORAGE]: {
     name: 'Storage',

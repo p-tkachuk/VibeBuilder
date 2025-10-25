@@ -1,5 +1,5 @@
 import type { Node, Edge } from '@xyflow/react';
-import { BuildingType, BUILDING_CONFIGS } from '../types/buildings';
+import { BuildingType, BuildingSpecialty, BUILDING_CONFIGS } from '../types/buildings';
 import { ResourceType } from '../types/terrain';
 import type { ResourceField } from '../types/terrain';
 import type { BuildingNodeData } from '../components/BuildingNode';
@@ -69,7 +69,7 @@ export class BuildingOperationService {
         const outputAmount = (config.outputs as Record<string, number>)[resourceType] || 2;
 
         // Add to connected building's inventory
-        this.addResourceToConnectedBuilding(outputEdge.target, allNodes, resourceType, outputAmount, inventoryUpdates);
+        this.addResourceToConnectedBuilding(outputEdge.target, allNodes, resourceType, outputAmount, inventoryUpdates, edges);
     }
 
     /**
@@ -110,7 +110,7 @@ export class BuildingOperationService {
         // Process based on building type
         const buildingType = producerNode.data.buildingType as BuildingType;
         if (buildingType === BuildingType.SMELTER || buildingType === BuildingType.ASSEMBLER) {
-            this.processGenericProductionOperation(allNodes, inputEdges[0], outputEdges[0], inventoryUpdates, existingUpdates, BUILDING_CONFIGS[buildingType]);
+            this.processGenericProductionOperation(producerNode, allNodes, inputEdges[0], outputEdges[0], inventoryUpdates, existingUpdates, BUILDING_CONFIGS[buildingType], edges);
         } else if (buildingType === BuildingType.SPLITTER) {
             this.processSplitterOperation(allNodes, inputEdges, outputEdges, inventoryUpdates, existingUpdates);
         }
@@ -120,33 +120,33 @@ export class BuildingOperationService {
      * Generic process production operation for buildings with specific inputs and outputs
      */
     private static processGenericProductionOperation(
+        producerNode: Node,
         allNodes: Node[],
-        inputEdge: Edge,
+        _inputEdge: Edge,
         outputEdge: Edge,
         inventoryUpdates: Record<string, Record<string, number>>,
         existingUpdates: Record<string, Record<string, number>>,
-        config: any
+        config: any,
+        edges: Edge[]
     ): void {
-        const inputNode = allNodes.find(n => n.id === inputEdge.source);
-        if (!inputNode || inputNode.type !== 'building') return;
+        // Check if the producer has the required inputs in its own inventory
+        const producerInventory = existingUpdates[producerNode.id] || (producerNode.data as unknown as BuildingNodeData).inventory || {};
 
-        const inputInventory = existingUpdates[inputNode.id] || (inputNode.data as unknown as BuildingNodeData).inventory || {};
-
-        // Check if all required inputs are available
+        // Check if all required inputs are available in producer's inventory
         const inputs = config.inputs as Record<string, number>;
         for (const [resource, required] of Object.entries(inputs)) {
-            if ((inputInventory[resource] || 0) < required) return;
+            if ((producerInventory[resource] || 0) < required) return;
         }
 
-        // Consume inputs
+        // Consume inputs from producer's inventory
         for (const [resource, required] of Object.entries(inputs)) {
-            this.deductResourceFromNode(inputNode.id, resource, required, inventoryUpdates);
+            this.deductResourceFromNode(producerNode.id, resource, required, inventoryUpdates);
         }
 
-        // Produce outputs
+        // Produce outputs to connected building
         const outputs = config.outputs as Record<string, number>;
         for (const [resource, amount] of Object.entries(outputs)) {
-            this.addResourceToConnectedBuilding(outputEdge.target, allNodes, resource, amount, inventoryUpdates);
+            this.addResourceToConnectedBuilding(outputEdge.target, allNodes, resource, amount, inventoryUpdates, edges);
         }
     }
 
@@ -179,8 +179,65 @@ export class BuildingOperationService {
 
         // Produce to each connected output
         outputEdges.forEach(outputEdge => {
-            this.addResourceToConnectedBuilding(outputEdge.target, allNodes, resourceType, 1, inventoryUpdates);
+            this.addResourceToConnectedBuilding(outputEdge.target, allNodes, resourceType, 1, inventoryUpdates, /* edges for splitter */[]);
         });
+    }
+
+    /**
+     * Process factory immediately when receiving resources
+     */
+    private static processFactoryImmediately(
+        factoryNode: Node,
+        allNodes: Node[],
+        resourceType: string,
+        amount: number,
+        inventoryUpdates: Record<string, Record<string, number>>,
+        edges: Edge[]
+    ): void {
+        const config = BUILDING_CONFIGS[factoryNode.data.buildingType as BuildingType];
+        const inputs = config.inputs as Record<string, number>;
+
+        // Check if the resource type matches the factory's input requirement
+        if (!(resourceType in inputs)) return;
+
+        const requiredAmount = inputs[resourceType];
+
+        // Add the incoming amount to temporary inventory for processing
+        const factoryInventory = inventoryUpdates[factoryNode.id] || {};
+
+        // For simplicity, process immediately if we reach the threshold
+        // Note: This doesn't handle partial accumulation well, but factories should process as much as possible
+        const totalNow = (factoryInventory[resourceType] || 0) + amount;
+        const batches = Math.floor(totalNow / requiredAmount);
+
+        if (batches > 0) {
+            // Find connected outputs
+            const outputEdges = edges.filter(edge => edge.source === factoryNode.id);
+
+            if (outputEdges.length === 0) return;
+
+            // Consume inputs
+            const consumed = batches * requiredAmount;
+            inventoryUpdates[factoryNode.id] = {
+                ...factoryInventory,
+                [resourceType]: totalNow - consumed
+            };
+
+            // Produce outputs
+            const outputs = config.outputs as Record<string, number>;
+            for (const [outputResource, outputAmount] of Object.entries(outputs)) {
+                for (const edge of outputEdges) {
+                    // Send to each connected output
+                    this.addResourceToConnectedBuilding(edge.target, allNodes, outputResource, outputAmount * batches, inventoryUpdates, edges);
+                }
+            }
+        } else {
+            // Accumulate the resource (though we try not to display it)
+            inventoryUpdates[factoryNode.id] = {
+                ...factoryInventory,
+                [resourceType]: (factoryInventory[resourceType] || 0) + amount
+            };
+        }
     }
 
     /**
@@ -237,12 +294,23 @@ export class BuildingOperationService {
         allNodes: Node[],
         resourceType: string,
         amount: number,
-        inventoryUpdates: Record<string, Record<string, number>>
+        inventoryUpdates: Record<string, Record<string, number>>,
+        edges: Edge[]
     ): void {
         const targetNode = allNodes.find(n => n.id === targetNodeId);
         if (!targetNode || targetNode.type !== 'building') return;
 
         const config = BUILDING_CONFIGS[targetNode.data.buildingType as BuildingType];
+
+        // Only buildings with UTILITY specialty can store resources
+        // FACTORY buildings process immediately and don't accumulate inventory
+        if (config.specialty === BuildingSpecialty.FACTORY) {
+            this.processFactoryImmediately(targetNode, allNodes, resourceType, amount, inventoryUpdates, edges);
+            return;
+        } else if (config.specialty !== BuildingSpecialty.UTILITY) {
+            return;
+        }
+
         const currentInventory = inventoryUpdates[targetNodeId] || (targetNode.data as unknown as BuildingNodeData).inventory || {};
         const currentTotal = Object.values(currentInventory).reduce((sum, v) => sum + v, 0);
 

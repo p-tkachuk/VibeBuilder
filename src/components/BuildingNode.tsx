@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import type { Edge } from '@xyflow/react';
-import { BuildingType, BUILDING_CONFIGS } from '../types/buildings';
+import { BuildingType, BuildingSpecialty, BUILDING_CONFIGS } from '../types/buildings';
 import styles from './BuildingNode.module.css';
 
 export interface BuildingNodeData {
@@ -88,7 +88,7 @@ export const BuildingNode: React.FC<BuildingNodeProps> = ({ data, ghost }) => {
           {Object.entries(config.outputs || {}).map(([res, amt]) => `${amt} ${res}`).join(', ')} /s
         </div>
       )}
-      {data.inventory && Object.keys(data.inventory).length > 0 && !(config as any).capacity && (
+      {data.inventory && Object.keys(data.inventory).length > 0 && !(config as any).capacity && config.specialty !== BuildingSpecialty.FACTORY && (
         <div className={styles.inventory}>
           {Object.entries(data.inventory).map(([key, value]) => `${key}: ${value}`).join(', ')}
         </div>
