@@ -106,4 +106,12 @@ export class ResourceInventoryService {
     increaseStorageCapacity(amount: number) {
         this.storageCapacity += amount;
     }
+
+    /**
+     * Decrease storage capacity
+     * @param amount Amount to decrease capacity by
+     */
+    decreaseStorageCapacity(amount: number) {
+        this.storageCapacity = Math.max(0, this.storageCapacity - amount);
+    }
 }

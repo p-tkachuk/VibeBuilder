@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { ReactFlow, useNodesState, useEdgesState, addEdge, type Node, type Edge, type NodeChange, type EdgeChange, type Connection, type NodeTypes } from '@xyflow/react';
+import { ReactFlow, useNodesState, useEdgesState, addEdge, type Node, type Edge, type NodeChange, type Connection, type NodeTypes } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { BuildingMenu } from './components/BuildingMenu';
 import { BuildingNode } from './components/BuildingNode';
@@ -8,13 +8,13 @@ import { MapBorderNode } from './components/MapBorderNode';
 import { TerrainOverlay } from './components/TerrainOverlay';
 import { BuildingPlacementHandler } from './components/BuildingPlacementHandler';
 import { ResourcePanel } from './components/ResourcePanel';
+import { BuildingType } from './types/buildings';
 import { Toast } from './components/Toast';
 import { useResourceFields } from './hooks/useResourceFields';
 import { useBuildingPlacement } from './hooks/useBuildingPlacement';
 import { COLORS, BUILDING_WIDTH, BUILDING_HEIGHT } from './constants/game.constants';
 import { GAME_CONFIG } from './config/game.config';
 import { snapToGrid, getBuildingCenter, doRectanglesOverlap } from './utils/position.utils';
-import { ResourceType } from './types/terrain';
 import { ResourceInventoryService } from './services/ResourceInventoryService';
 import { BuildingOperationService } from './services/BuildingOperationService';
 
@@ -92,6 +92,26 @@ export default function App() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [selectedBuildingType, clearSelection]);
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Delete') {
+        setNodes((nds) => {
+          // Count storage buildings being deleted
+          const deletedStorageBuildings = nds.filter((n) => n.selected && n.type === 'building' && n.data.buildingType === BuildingType.STORAGE);
+          if (deletedStorageBuildings.length > 0) {
+            // Decrease storage capacity by 1000 per deleted storage building
+            resourceInventory.decreaseStorageCapacity(deletedStorageBuildings.length * 1000);
+          }
+          return nds.filter((n) => !n.selected);
+        });
+        setEdges((eds) => eds.filter((e) => !e.selected));
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [setNodes, setEdges, resourceInventory]);
+
   // Building operations ticker
   useEffect(() => {
     const interval = setInterval(() => {
@@ -165,8 +185,6 @@ export default function App() {
               //console.log(node.id, existingRect);
               return doRectanglesOverlap(proposedRect, existingRect);
             });
-
-            console.log(change.id, hasCollision);
 
             if (hasCollision) {
               return false; // Reject position change that would cause collision
