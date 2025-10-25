@@ -1,4 +1,5 @@
 import { GAME_CONFIG } from "../config/game.config";
+import { ResourceType } from "./terrain";
 
 export interface Building {
   id: string;
@@ -73,9 +74,9 @@ export const BUILDING_CONFIGS = {
     description: 'Smelts iron ore into iron plates',
     color: '#FF4500',
     icon: '🔥',
-    inputs: { 'iron-ore': 2 },
-    outputs: { 'iron-plate': 1 },
-    cost: { stone: 10, 'iron-ore': 5 },
+    inputs: { [ResourceType.IRON_ORE]: 2 },
+    outputs: { [ResourceType.IRON_PLATE]: 1 },
+    cost: { stone: 10, [ResourceType.IRON_ORE]: 5 },
     specialty: BuildingSpecialty.FACTORY
   },
   [BuildingType.ASSEMBLER]: {
@@ -83,9 +84,9 @@ export const BUILDING_CONFIGS = {
     description: 'Assembles iron plates into iron gears',
     color: '#4169E1',
     icon: '⚙️',
-    inputs: { 'iron-plate': 2 },
-    outputs: { 'iron-gear': 1 },
-    cost: { stone: 10, 'iron-plate': 10 },
+    inputs: { [ResourceType.IRON_PLATE]: 1 },
+    outputs: { [ResourceType.IRON_GEAR]: 1 },
+    cost: { stone: 10, [ResourceType.IRON_PLATE]: 10 },
     specialty: BuildingSpecialty.FACTORY
   },
   [BuildingType.SPLITTER]: {
@@ -95,7 +96,7 @@ export const BUILDING_CONFIGS = {
     icon: '↔️',
     inputs: { 'any': 2 },
     outputs: { 'any-0': 1, 'any-1': 1 },
-    cost: { 'iron-plate': 5, 'copper-ore': 5 },
+    cost: { [ResourceType.IRON_PLATE]: 5, [ResourceType.COPPER_ORE]: 5 },
     specialty: BuildingSpecialty.UTILITY
   },
   [BuildingType.STORAGE]: {

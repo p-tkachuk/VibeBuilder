@@ -12,7 +12,9 @@ export enum ResourceType {
   IRON_ORE = 'iron-ore',
   COAL = 'coal',
   COPPER_ORE = 'copper-ore',
-  STONE = 'stone'
+  STONE = 'stone',
+  IRON_PLATE = 'iron-plate',
+  IRON_GEAR = 'iron-gear'
 }
 
 export const RESOURCE_COLORS = {
@@ -26,5 +28,7 @@ export const RESOURCE_PATTERNS = {
   [ResourceType.IRON_ORE]: '🔶',
   [ResourceType.COAL]: '⬛',
   [ResourceType.COPPER_ORE]: '🟠',
-  [ResourceType.STONE]: '⬜'
+  [ResourceType.STONE]: '⬜',
+  [ResourceType.IRON_PLATE]: '🟫',
+  [ResourceType.IRON_GEAR]: '⚙️'
 };
