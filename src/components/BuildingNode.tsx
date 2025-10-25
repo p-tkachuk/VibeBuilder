@@ -1,7 +1,7 @@
 import React from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { BuildingType, BUILDING_CONFIGS } from '../types/buildings';
-import { buildingNodeStyles, handleStyles } from '../styles/components.styles';
+import styles from './BuildingNode.module.css';
 
 export interface BuildingNodeData {
   buildingType: BuildingType;
@@ -21,23 +21,12 @@ interface BuildingNodeProps {
 export const BuildingNode: React.FC<BuildingNodeProps> = ({ data, ghost }) => {
   const config = BUILDING_CONFIGS[data.buildingType];
 
-  const containerStyle = {
-    ...buildingNodeStyles.container,
-    backgroundColor: config.color,
-    border: ghost
-      ? buildingNodeStyles.ghost.border
-      : '2px solid rgba(255,255,255,0.3)',
-    opacity: ghost ? buildingNodeStyles.ghost.opacity : 1,
-    pointerEvents: buildingNodeStyles.ghost.pointerEvents,
-    filter: ghost ? buildingNodeStyles.ghost.filter : undefined,
-  };
-
   const renderHandle = (type: 'target' | 'source', position: Position, key?: number) => (
     <Handle
       key={key}
       type={type}
       position={position}
-      style={handleStyles}
+      className={styles.handle}
     />
   );
 
@@ -65,8 +54,11 @@ export const BuildingNode: React.FC<BuildingNodeProps> = ({ data, ghost }) => {
   };
 
   return (
-    <div style={containerStyle}>
-      <div style={buildingNodeStyles.icon}>{config.icon}</div>
+    <div
+      className={`${styles.container} ${ghost ? styles.ghost : ''}`}
+      style={{ backgroundColor: config.color }}
+    >
+      <div className={styles.icon}>{config.icon}</div>
       <div>{data.label}</div>
 
       {renderInputHandles()}

@@ -1,0 +1,65 @@
+/* BuildingMenu CSS Module */
+
+.container {
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 200px;
+}
+
+.title {
+    color: white;
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.selectedInfo {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: white;
+}
+
+.button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    text-align: left;
+    border: none;
+    color: white;
+}
+
+.button:hover:not(.selected) {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.selected {
+    background-color: #4CAF50;
+    border: 2px solid #81C784;
+}
+
+.icon {
+    font-size: 18px;
+}
+
+.text {
+    font-weight: bold;
+}
+
+.description {
+    font-size: 12px;
+    opacity: 0.9;
+}

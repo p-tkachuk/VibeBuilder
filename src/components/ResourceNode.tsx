@@ -1,6 +1,6 @@
 import React from 'react';
 import { ResourceType, RESOURCE_COLORS, RESOURCE_PATTERNS } from '../types/terrain';
-import { resourceNodeStyles } from '../styles/components.styles';
+import styles from './ResourceNode.module.css';
 import { OPACITY } from '../constants/game.constants';
 
 interface ResourceNodeData {
@@ -19,8 +19,7 @@ interface ResourceNodeProps {
  * Follows Single Responsibility Principle - only handles resource field rendering
  */
 export const ResourceNode: React.FC<ResourceNodeProps> = ({ data }) => {
-  const containerStyle = {
-    ...resourceNodeStyles.container,
+  const dynamicStyle = {
     width: data.width,
     height: data.height,
     backgroundColor: RESOURCE_COLORS[data.resourceType],
@@ -29,7 +28,7 @@ export const ResourceNode: React.FC<ResourceNodeProps> = ({ data }) => {
   };
 
   return (
-    <div style={containerStyle}>
+    <div className={styles.container} style={dynamicStyle}>
       {RESOURCE_PATTERNS[data.resourceType]}
     </div>
   );

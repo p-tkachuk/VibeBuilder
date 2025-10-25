@@ -1,0 +1,31 @@
+/* BuildingNode CSS Module */
+
+.container {
+    border-radius: 8px;
+    padding: 12px;
+    min-width: 120px;
+    text-align: center;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.ghost {
+    border: 2px dashed rgba(255, 255, 255, 0.8);
+    opacity: 0.45;
+    pointer-events: none;
+    filter: blur(0.5px) grayscale(0.3);
+}
+
+.icon {
+    font-size: 20px;
+    margin-bottom: 4px;
+}
+
+.handle {
+    background-color: #555;
+    width: 8px;
+    height: 8px;
+}

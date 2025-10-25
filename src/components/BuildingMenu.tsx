@@ -1,6 +1,6 @@
 import React from 'react';
 import { BuildingType, BUILDING_CONFIGS } from '../types/buildings';
-import { buildingMenuStyles, buildingButtonStyles } from '../styles/components.styles';
+import styles from './BuildingMenu.module.css';
 
 interface BuildingMenuProps {
   onBuildingSelect: (buildingType: BuildingType) => void;
@@ -18,11 +18,11 @@ export const BuildingMenu: React.FC<BuildingMenuProps> = ({
   const buildingTypes = Object.values(BuildingType);
 
   return (
-    <div style={buildingMenuStyles.container}>
-      <h3 style={buildingMenuStyles.title}>Building Menu</h3>
+    <div className={styles.container}>
+      <h3 className={styles.title}>Building Menu</h3>
 
       {selectedBuildingType && (
-        <div style={buildingMenuStyles.selectedInfo}>
+        <div className={styles.selectedInfo}>
           <strong>Selected:</strong> {BUILDING_CONFIGS[selectedBuildingType].name}
           <br />
           <em>Click on the map to place</em>
@@ -37,29 +37,13 @@ export const BuildingMenu: React.FC<BuildingMenuProps> = ({
           <button
             key={buildingType}
             onClick={() => onBuildingSelect(buildingType)}
-            style={{
-              ...buildingButtonStyles.base,
-              ...(isSelected
-                ? buildingButtonStyles.selected
-                : { backgroundColor: config.color, color: 'white' }),
-            }}
-            onMouseEnter={(e) => {
-              if (!isSelected) {
-                e.currentTarget.style.transform = 'scale(1.05)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!isSelected) {
-                e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.boxShadow = 'none';
-              }
-            }}
+            className={`${styles.button} ${isSelected ? styles.selected : ''}`}
+            style={!isSelected ? { backgroundColor: config.color } : undefined}
           >
-            <span style={buildingButtonStyles.icon}>{config.icon}</span>
+            <span className={styles.icon}>{config.icon}</span>
             <div>
-              <div style={buildingButtonStyles.text}>{config.name}</div>
-              <div style={buildingButtonStyles.description}>{config.description}</div>
+              <div className={styles.text}>{config.name}</div>
+              <div className={styles.description}>{config.description}</div>
             </div>
           </button>
         );
