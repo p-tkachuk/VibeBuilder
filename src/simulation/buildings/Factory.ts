@@ -3,57 +3,83 @@ import { BUILDING_CONFIGS, BuildingType } from '../../types/buildings';
 
 export class Factory extends BaseBuilding {
     tick(): void {
+        this.phasePull();
+        this.phaseConsumeAndProduce();
+    }
+
+    phaseProduce(): void {
+        // No direct production for factory
+    }
+
+    phasePull(): void {
         // Check if has connected input
         if (!this.hasConnectedInput()) return;
-
-        // Check if has connected output (consumers)
-        if (!this.hasConnectedOutput()) return;
 
         // Check if inventory is full
         if (this.inventory.getTotal() >= this.inventory.getCapacity()) return;
 
-        // Check if all required inputs are available from suppliers
         const config = BUILDING_CONFIGS[this.type];
         const inputs = config.inputs as Record<string, number>;
         const totalNeeded: Record<string, number> = {};
-
         for (const [resource, needed] of Object.entries(inputs)) {
             totalNeeded[resource] = needed;
         }
 
-        // Try to pull from connected input buildings
         if (this.suppliers.length === 0) return;
 
-        // Pull from suppliers, aggregate amounts
-        let pulled: Record<string, number> = {};
-        let canProduce = true;
-
+        // Try to pull to fill internal to needed
         for (const [resource, needed] of Object.entries(totalNeeded)) {
-            let remaining = needed;
+            const availableInternal = this.inventory.get(resource);
+            if (availableInternal >= needed) continue; // Already enough
+
+            const requiredToPull = needed - availableInternal;
+            let pulledAmount = 0;
+
             for (const supplier of this.suppliers) {
-                const pulledAmount = supplier.pullResource(resource, remaining);
-                pulled[resource] = (pulled[resource] || 0) + pulledAmount;
-                remaining -= pulledAmount;
-                if (remaining <= 0) break;
+                const pulled = supplier.pullResource(resource, requiredToPull - pulledAmount);
+                pulledAmount += pulled;
+                if (pulledAmount >= requiredToPull) break;
             }
-            if (remaining > 0) {
+
+            // Add pulled to internal regardless
+            if (pulledAmount > 0) {
+                this.inventory.add(resource, pulledAmount);
+            }
+        }
+    }
+
+    phaseConsumeAndProduce(): void {
+        // Check if has connected output (consumers)
+        if (!this.hasConnectedOutput()) return;
+
+        const config = BUILDING_CONFIGS[this.type];
+        const inputs = config.inputs as Record<string, number>;
+        const totalNeeded: Record<string, number> = {};
+        for (const [resource, needed] of Object.entries(inputs)) {
+            totalNeeded[resource] = needed;
+        }
+
+        // Check if enough in internal to consume
+        let canProduce = true;
+        for (const [resource, needed] of Object.entries(totalNeeded)) {
+            if (this.inventory.get(resource) < needed) {
                 canProduce = false;
                 break;
             }
         }
 
         if (canProduce) {
+            // Consume from internal
+            for (const [resource, needed] of Object.entries(totalNeeded)) {
+                this.inventory.remove(resource, needed);
+            }
+
             // Produce outputs
             const outputs = config.outputs as Record<string, number>;
             for (const [resource, amount] of Object.entries(outputs)) {
                 this.inventory.add(resource, amount);
             }
             console.log(`${this.type} consumed ${JSON.stringify(totalNeeded)} and produced ${JSON.stringify(outputs)}`);
-        } else {
-            // Return pulled resources if not enough
-            for (const [resource, amount] of Object.entries(pulled)) {
-                this.inventory.add(resource, amount);
-            }
         }
     }
 }

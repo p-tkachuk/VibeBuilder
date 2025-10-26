@@ -114,21 +114,50 @@ export abstract class BaseBuilding {
         return false;
     }
 
+    protected getOutputResources(): string[] {
+        const config = BUILDING_CONFIGS[this.type];
+        const outputs = Object.keys(config.outputs as Record<string, any>);
+        if (outputs.includes('any')) {
+            return ['iron-ore', 'coal', 'stone', 'copper-ore', ResourceType.IRON_PLATE, ResourceType.IRON_GEAR];
+        }
+        // Also include labeled outputs like 'any-0'
+        const expanded = outputs.flatMap(key => {
+            if (key.includes('any')) return ['iron-ore', 'coal', 'stone', 'copper-ore', ResourceType.IRON_PLATE, ResourceType.IRON_GEAR];
+            return key;
+        });
+        return expanded;
+    }
+
     pullResource(resource: string, amount: number): number {
+        // Only allow pulling resources that this building outputs
+        const outputResources = this.getOutputResources();
+        if (!outputResources.includes(resource)) return 0;
         return this.inventory.remove(resource, amount);
     }
 
     pullAnyResource(maxAmount: number): { resource: string, pulled: number } | null {
-        // Find a resource with at least 1
-        // This is a simple implementation, pulls from first resource found
+        // Find a resource with at least 1, that is in outputs
+        const outputResources = this.getOutputResources();
         for (const res of ['iron-ore', 'coal', 'stone', 'copper-ore', ResourceType.IRON_PLATE, ResourceType.IRON_GEAR]) {
-            if (this.inventory.get(res) > 0) {
+            if (outputResources.includes(res) && this.inventory.get(res) > 0) {
                 const pulled = Math.min(maxAmount, this.inventory.get(res));
                 this.inventory.remove(res, pulled);
                 return { resource: res, pulled };
             }
         }
         return null;
+    }
+
+    phaseProduce(): void {
+        // Default: do nothing (miner overrides)
+    }
+
+    phasePull(): void {
+        // Default: do nothing (miner needs no pull)
+    }
+
+    phaseConsumeAndProduce(): void {
+        // Default: do nothing (storage needs no consume/produce)
     }
 
     getUpdatedNode(): Node {

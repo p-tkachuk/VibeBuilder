@@ -20,6 +20,10 @@ export class Miner extends BaseBuilding {
     }
 
     tick(): void {
+        this.phaseProduce();
+    }
+
+    phaseProduce(): void {
         // Check if placed over resource field
         const center = getBuildingCenter(this.node.position);
         if (!isPositionInResourceField(center, this.resourceFields, this.resourceFieldType as ResourceType)) return;
@@ -35,5 +39,13 @@ export class Miner extends BaseBuilding {
         if (this.inventory.add(this.resourceFieldType, amount)) {
             console.log(`${this.type} produced ${amount} ${this.resourceFieldType}`);
         }
+    }
+
+    phasePull(): void {
+        // Doesn't pull
+    }
+
+    phaseConsumeAndProduce(): void {
+        // Doesn't consume/produce
     }
 }

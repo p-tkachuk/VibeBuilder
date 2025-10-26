@@ -9,9 +9,13 @@ import { Storage } from './buildings/Storage';
 
 export class TickProcessor {
     static processTick(nodes: Node[], edges: Edge[], resourceFields: ResourceField[]): Node[] {
+        // Each tick, we temporarily create building instances, process their logic, and update the nodes
+        // This ensures that building logic is driven by the immutable node state
+        // Node creation/update performance is acceptable for typical game configurations
+
         const buildings: Record<string, BaseBuilding> = {};
 
-        // Instantiate building objects for all building nodes
+        // Instantiate building objects for processing this tick
         nodes.forEach(node => {
             if (node.type === 'building') {
                 const building = this.createBuilding(node, edges, nodes, edges, resourceFields);
@@ -21,18 +25,17 @@ export class TickProcessor {
             }
         });
 
-        // Set suppliers after all buildings are created
+        // Establish supplier relationships after instantiation
         Object.values(buildings).forEach(building => {
             building.setSuppliers(buildings);
         });
 
-        // Process each building's tick in order: producers first
-        const order: BuildingSpecialty[] = [BuildingSpecialty.MINER, BuildingSpecialty.FACTORY, BuildingSpecialty.STORAGE, BuildingSpecialty.UTILITY];
-        order.forEach(specialty => {
-            Object.values(buildings).filter(b => b.specialty === specialty).forEach(building => building.tick());
-        });
+        // Process in separate phases: produce, pull, consume-produce
+        Object.values(buildings).filter(b => b.specialty === BuildingSpecialty.MINER).forEach(building => building.phaseProduce());
+        Object.values(buildings).forEach(building => building.phasePull());
+        Object.values(buildings).filter(b => b.specialty === BuildingSpecialty.FACTORY || b.specialty === BuildingSpecialty.UTILITY).forEach(building => building.phaseConsumeAndProduce());
 
-        // Return updated nodes
+        // Update nodes with the processed inventory states
         return nodes.map(node => {
             if (node.type === 'building' && buildings[node.id]) {
                 return buildings[node.id].getUpdatedNode();

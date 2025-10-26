@@ -112,8 +112,8 @@ export const BUILDING_CONFIGS = {
     description: 'Stores items for later use',
     color: '#FFD700',
     icon: '📦',
-    inputs: { 'any': undefined },
-    outputs: { 'any': undefined },
+    inputs: { 'any': 2 },
+    outputs: { 'any': 2 },
     cost: { stone: 10 },
     capacity: GAME_CONFIG.storageCapacity,
     specialty: BuildingSpecialty.STORAGE
