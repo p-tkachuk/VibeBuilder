@@ -1,5 +1,5 @@
 import { BaseBuilding } from './BaseBuilding';
-import { BUILDING_CONFIGS, BuildingType } from '../../types/buildings';
+import { BUILDING_CONFIGS } from '../../types/buildings';
 
 export class Factory extends BaseBuilding {
     tick(): void {

@@ -110,7 +110,7 @@ export abstract class BaseBuilding {
         return outputEdges.map(edge => this.allNodes.find(n => n.id === edge.target)).filter(n => n) as Node[];
     }
 
-    protected pushResource(toBuilding: BaseBuilding, resource: string, amount: number): boolean {
+    protected pushResource(_toBuilding: BaseBuilding, _resource: string, _amount: number): boolean {
         return false;
     }
 

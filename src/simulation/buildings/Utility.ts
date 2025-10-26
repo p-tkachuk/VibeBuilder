@@ -19,14 +19,18 @@ export class Utility extends BaseBuilding {
         // Check if inventory is full
         if (this.inventory.getTotal() >= this.inventory.getCapacity()) return;
 
-        // Pull 2 units of any resource from suppliers
+        const config = BUILDING_CONFIGS[this.type];
+        const inputs = config.inputs as Record<string, number>;
+        const pullAmount = inputs['any'] || 1;
+
+        // Pull any units of any resource from suppliers
         if (this.suppliers.length === 0) return;
 
         let pulledAmount = 0;
         let pulledResource = 'any';
 
         for (const supplier of this.suppliers) {
-            const result = supplier.pullAnyResource(2);
+            const result = supplier.pullAnyResource(pullAmount);
             if (result) {
                 pulledAmount = result.pulled;
                 pulledResource = result.resource;
@@ -45,20 +49,18 @@ export class Utility extends BaseBuilding {
 
         const config = BUILDING_CONFIGS[this.type];
         const inputs = config.inputs as Record<string, number>;
-        // For splitter, inputs { 'any': 2 }
+        const consumeAmount = inputs['any'] || 1;
 
-        // Find any resource with at least 2
+        // Find any resource with at least consumeAmount
         let consumeResource = '';
-        let consumeAmount = 0;
         for (const res of ['iron-ore', 'coal', 'stone', 'copper-ore', ResourceType.IRON_PLATE, ResourceType.IRON_GEAR]) {
-            if (this.inventory.get(res) >= 2) {
+            if (this.inventory.get(res) >= consumeAmount) {
                 consumeResource = res;
-                consumeAmount = 2;
                 break;
             }
         }
 
-        if (consumeAmount >= 2) {
+        if (consumeResource && consumeAmount >= 1) {
             // Consume
             this.inventory.remove(consumeResource, consumeAmount);
 

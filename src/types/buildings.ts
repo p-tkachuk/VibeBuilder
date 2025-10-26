@@ -36,7 +36,7 @@ export const BUILDING_CONFIGS = {
     color: '#B87333',
     icon: '⛏️',
     inputs: {},
-    outputs: { 'copper-ore': 1 },
+    outputs: { 'copper-ore': 2 },
     cost: { stone: 5 },
     specialty: BuildingSpecialty.MINER,
     inventoryCapacity: 10
@@ -47,7 +47,7 @@ export const BUILDING_CONFIGS = {
     color: '#2F2F2F',
     icon: '⛏️',
     inputs: {},
-    outputs: { 'coal': 1 },
+    outputs: { 'coal': 2 },
     cost: { stone: 5 },
     specialty: BuildingSpecialty.MINER,
     inventoryCapacity: 10
@@ -58,7 +58,7 @@ export const BUILDING_CONFIGS = {
     color: '#8B4513',
     icon: '⛏️',
     inputs: {},
-    outputs: { 'iron-ore': 1 },
+    outputs: { 'iron-ore': 2 },
     cost: { stone: 5 },
     specialty: BuildingSpecialty.MINER,
     inventoryCapacity: 10
@@ -69,7 +69,7 @@ export const BUILDING_CONFIGS = {
     color: '#696969',
     icon: '⛏️',
     inputs: {},
-    outputs: { stone: 1 },
+    outputs: { stone: 2 },
     cost: { stone: 5 },
     specialty: BuildingSpecialty.MINER,
     inventoryCapacity: 10
@@ -90,7 +90,7 @@ export const BUILDING_CONFIGS = {
     description: 'Assembles iron plates into iron gears',
     color: '#4169E1',
     icon: '⚙️',
-    inputs: { [ResourceType.IRON_PLATE]: 1 },
+    inputs: { [ResourceType.IRON_PLATE]: 2 },
     outputs: { [ResourceType.IRON_GEAR]: 1 },
     cost: { stone: 10, [ResourceType.IRON_PLATE]: 10 },
     specialty: BuildingSpecialty.FACTORY,

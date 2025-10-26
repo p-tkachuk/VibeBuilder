@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import type { Edge } from '@xyflow/react';
-import { BuildingType, BuildingSpecialty, BUILDING_CONFIGS } from '../types/buildings';
+import { BuildingType, BUILDING_CONFIGS } from '../types/buildings';
 import styles from './BuildingNode.module.css';
 
 export interface BuildingNodeData {

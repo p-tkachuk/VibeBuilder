@@ -34,8 +34,11 @@ export class Miner extends BaseBuilding {
         // Check if inventory is full
         if (this.inventory.getTotal() >= this.inventory.getCapacity()) return;
 
-        // Produce 1 resource
-        const amount = 1;
+        // Get production amount from config
+        const config = BUILDING_CONFIGS[this.type];
+        const outputs = config.outputs as Record<string, number>;
+        const amount = outputs[this.resourceFieldType] || 1;
+
         if (this.inventory.add(this.resourceFieldType, amount)) {
             console.log(`${this.type} produced ${amount} ${this.resourceFieldType}`);
         }
