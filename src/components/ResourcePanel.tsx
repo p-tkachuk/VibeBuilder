@@ -1,5 +1,5 @@
 import React from 'react';
-import { ResourceType, RESOURCE_PATTERNS } from '../types/terrain';
+import { ResourceType, RESOURCE_PATTERNS, RESOURCE_COLORS } from '../types/terrain';
 
 interface ResourcePanelProps {
     resources: Record<string, number>;
@@ -26,7 +26,14 @@ export const ResourcePanel: React.FC<ResourcePanelProps> = ({ resources }) => {
             <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
                 {Object.entries(resources).map(([resource, count]) => (
                     <div key={resource} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                        <span>{RESOURCE_PATTERNS[resource as ResourceType] || resource}</span>
+                        <span
+                            style={{
+                                color: RESOURCE_COLORS[resource as ResourceType],
+                                textShadow: '-1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white, 1px 1px 0 white'
+                            }}
+                        >
+                            {RESOURCE_PATTERNS[resource as ResourceType] || resource}
+                        </span>
                         <span>{count}</span>
                     </div>
                 ))}

@@ -11,9 +11,18 @@ const MINER_TYPES = [
   BuildingType.STONE_MINER,
 ];
 
-const NON_MINER_BUILDINGS = [
+const SMELTER_TYPES = [
   BuildingType.SMELTER,
+  BuildingType.COPPER_SMELTER,
+  BuildingType.STEEL_FURNACE,
+];
+
+const ASSEMBLER_TYPES = [
   BuildingType.ASSEMBLER,
+  BuildingType.STEEL_ASSEMBLER,
+];
+
+const UTILITY_BUILDINGS = [
   BuildingType.SPLITTER,
   BuildingType.STORAGE,
 ];
@@ -67,8 +76,12 @@ export const BuildingMenu: React.FC<BuildingMenuProps> = ({
   nodes,
 }) => {
   const [minersExpanded, setMinersExpanded] = useState(false);
+  const [smeltersExpanded, setSmeltersExpanded] = useState(false);
+  const [assemblersExpanded, setAssemblersExpanded] = useState(false);
 
   const isMinerSelected = selectedBuildingType && MINER_TYPES.includes(selectedBuildingType);
+  const isSmelterSelected = selectedBuildingType && SMELTER_TYPES.includes(selectedBuildingType);
+  const isAssemblerSelected = selectedBuildingType && ASSEMBLER_TYPES.includes(selectedBuildingType);
 
   return (
     <div className={styles.container}>
@@ -106,8 +119,56 @@ export const BuildingMenu: React.FC<BuildingMenuProps> = ({
         </div>
       )}
 
+      {/* Smelters category */}
+      <button
+        onClick={() => setSmeltersExpanded(!smeltersExpanded)}
+        className={`${styles.button} ${isSmelterSelected && !smeltersExpanded ? styles.selected : ''}`}
+        style={{ backgroundColor: smeltersExpanded ? '#4A5568' : '#2D3748' }}
+      >
+        <span className={styles.icon}>🔥</span>
+        <div>
+          <div className={styles.text}>Smelters & Furnaces</div>
+          <div className={styles.description}>
+            Convert ores into materials
+            {smeltersExpanded ? ' ▼' : ' ▶'}
+          </div>
+        </div>
+      </button>
+
+      {smeltersExpanded && (
+        <div className={styles.submenu}>
+          {SMELTER_TYPES.map((buildingType) =>
+            renderBuildingButton(buildingType, onBuildingSelect, selectedBuildingType, resourceInventory, nodes, true)
+          )}
+        </div>
+      )}
+
+      {/* Assemblers category */}
+      <button
+        onClick={() => setAssemblersExpanded(!assemblersExpanded)}
+        className={`${styles.button} ${isAssemblerSelected && !assemblersExpanded ? styles.selected : ''}`}
+        style={{ backgroundColor: assemblersExpanded ? '#4A5568' : '#2D3748' }}
+      >
+        <span className={styles.icon}>⚙️</span>
+        <div>
+          <div className={styles.text}>Assemblers</div>
+          <div className={styles.description}>
+            Assemble materials into components
+            {assemblersExpanded ? ' ▼' : ' ▶'}
+          </div>
+        </div>
+      </button>
+
+      {assemblersExpanded && (
+        <div className={styles.submenu}>
+          {ASSEMBLER_TYPES.map((buildingType) =>
+            renderBuildingButton(buildingType, onBuildingSelect, selectedBuildingType, resourceInventory, nodes, true)
+          )}
+        </div>
+      )}
+
       {/* Other buildings */}
-      {NON_MINER_BUILDINGS.map((buildingType) =>
+      {UTILITY_BUILDINGS.map((buildingType) =>
         renderBuildingButton(buildingType, onBuildingSelect, selectedBuildingType, resourceInventory, nodes)
       )}
     </div>

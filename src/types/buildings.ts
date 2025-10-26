@@ -17,7 +17,10 @@ export enum BuildingType {
   IRON_MINER = 'iron-miner',
   STONE_MINER = 'stone-miner',
   SMELTER = 'smelter',
+  COPPER_SMELTER = 'copper-smelter',
+  STEEL_FURNACE = 'steel-furnace',
   ASSEMBLER = 'assembler',
+  STEEL_ASSEMBLER = 'steel-assembler',
   SPLITTER = 'splitter',
   STORAGE = 'storage'
 }
@@ -85,6 +88,28 @@ export const BUILDING_CONFIGS = {
     specialty: BuildingSpecialty.FACTORY,
     inventoryCapacity: 10
   },
+  [BuildingType.COPPER_SMELTER]: {
+    name: 'Copper Smelter',
+    description: 'Smelts copper ore into copper plates',
+    color: '#DAA520',
+    icon: '🔥',
+    inputs: { [ResourceType.COPPER_ORE]: 2 },
+    outputs: { [ResourceType.COPPER_PLATE]: 1 },
+    cost: { stone: 10, [ResourceType.COPPER_ORE]: 5 },
+    specialty: BuildingSpecialty.FACTORY,
+    inventoryCapacity: 10
+  },
+  [BuildingType.STEEL_FURNACE]: {
+    name: 'Steel Furnace',
+    description: 'Smelts iron plates and coal into steel plates',
+    color: '#708090',
+    icon: '🔥',
+    inputs: { [ResourceType.IRON_PLATE]: 1, 'coal': 1 },
+    outputs: { [ResourceType.STEEL_PLATE]: 1 },
+    cost: { stone: 20, [ResourceType.IRON_PLATE]: 10, 'coal': 10 },
+    specialty: BuildingSpecialty.FACTORY,
+    inventoryCapacity: 10
+  },
   [BuildingType.ASSEMBLER]: {
     name: 'Iron Gear Assembler',
     description: 'Assembles iron plates into iron gears',
@@ -93,6 +118,17 @@ export const BUILDING_CONFIGS = {
     inputs: { [ResourceType.IRON_PLATE]: 2 },
     outputs: { [ResourceType.IRON_GEAR]: 1 },
     cost: { stone: 10, [ResourceType.IRON_PLATE]: 10 },
+    specialty: BuildingSpecialty.FACTORY,
+    inventoryCapacity: 10
+  },
+  [BuildingType.STEEL_ASSEMBLER]: {
+    name: 'Steel Gear Assembler',
+    description: 'Assembles steel plates into steel gears',
+    color: '#2F4F4F',
+    icon: '⚙️',
+    inputs: { [ResourceType.STEEL_PLATE]: 2 },
+    outputs: { [ResourceType.STEEL_GEAR]: 1 },
+    cost: { stone: 15, [ResourceType.STEEL_PLATE]: 5 },
     specialty: BuildingSpecialty.FACTORY,
     inventoryCapacity: 10
   },

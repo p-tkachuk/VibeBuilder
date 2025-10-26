@@ -14,7 +14,10 @@ export enum ResourceType {
   COPPER_ORE = 'copper-ore',
   STONE = 'stone',
   IRON_PLATE = 'iron-plate',
-  IRON_GEAR = 'iron-gear'
+  COPPER_PLATE = 'copper-plate',
+  STEEL_PLATE = 'steel-plate',
+  IRON_GEAR = 'iron-gear',
+  STEEL_GEAR = 'steel-gear'
 }
 
 export const RESOURCE_COLORS = {
@@ -22,17 +25,23 @@ export const RESOURCE_COLORS = {
   [ResourceType.COAL]: '#2F2F2F',
   [ResourceType.COPPER_ORE]: '#CD7F32',
   [ResourceType.STONE]: '#A9A9A9',
-  [ResourceType.IRON_PLATE]: '#696969',
-  [ResourceType.IRON_GEAR]: '#808080'
+  [ResourceType.IRON_PLATE]: '#B22222',
+  [ResourceType.COPPER_PLATE]: '#FFD700',
+  [ResourceType.STEEL_PLATE]: '#708090',
+  [ResourceType.IRON_GEAR]: '#696969',
+  [ResourceType.STEEL_GEAR]: '#C0C0C0'
 };
 
 export const RESOURCE_PATTERNS = {
-  [ResourceType.IRON_ORE]: '🔶',
-  [ResourceType.COAL]: '⬛',
-  [ResourceType.COPPER_ORE]: '🟠',
-  [ResourceType.STONE]: '⬜',
-  [ResourceType.IRON_PLATE]: '🟫',
-  [ResourceType.IRON_GEAR]: '⚙️'
+  [ResourceType.IRON_ORE]: '◆',
+  [ResourceType.COAL]: '◆',
+  [ResourceType.COPPER_ORE]: '◆',
+  [ResourceType.STONE]: '◆',
+  [ResourceType.IRON_PLATE]: '■',
+  [ResourceType.COPPER_PLATE]: '■',
+  [ResourceType.STEEL_PLATE]: '■',
+  [ResourceType.IRON_GEAR]: '⚙',
+  [ResourceType.STEEL_GEAR]: '⚙'
 };
 
 export const ORE_TYPES = [

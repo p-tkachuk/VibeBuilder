@@ -118,11 +118,11 @@ export abstract class BaseBuilding {
         const config = BUILDING_CONFIGS[this.type];
         const outputs = Object.keys(config.outputs as Record<string, any>);
         if (outputs.includes('any')) {
-            return ['iron-ore', 'coal', 'stone', 'copper-ore', ResourceType.IRON_PLATE, ResourceType.IRON_GEAR];
+            return ['iron-ore', 'coal', 'stone', 'copper-ore', ResourceType.IRON_PLATE, ResourceType.COPPER_PLATE, ResourceType.STEEL_PLATE, ResourceType.IRON_GEAR, ResourceType.STEEL_GEAR];
         }
         // Also include labeled outputs like 'any-0'
         const expanded = outputs.flatMap(key => {
-            if (key.includes('any')) return ['iron-ore', 'coal', 'stone', 'copper-ore', ResourceType.IRON_PLATE, ResourceType.IRON_GEAR];
+            if (key.includes('any')) return ['iron-ore', 'coal', 'stone', 'copper-ore', ResourceType.IRON_PLATE, ResourceType.COPPER_PLATE, ResourceType.STEEL_PLATE, ResourceType.IRON_GEAR, ResourceType.STEEL_GEAR];
             return key;
         });
         return expanded;
@@ -138,7 +138,7 @@ export abstract class BaseBuilding {
     pullAnyResource(maxAmount: number): { resource: string, pulled: number } | null {
         // Find a resource with at least 1, that is in outputs
         const outputResources = this.getOutputResources();
-        for (const res of ['iron-ore', 'coal', 'stone', 'copper-ore', ResourceType.IRON_PLATE, ResourceType.IRON_GEAR]) {
+        for (const res of ['iron-ore', 'coal', 'stone', 'copper-ore', ResourceType.IRON_PLATE, ResourceType.COPPER_PLATE, ResourceType.STEEL_PLATE, ResourceType.IRON_GEAR, ResourceType.STEEL_GEAR]) {
             if (outputResources.includes(res) && this.inventory.get(res) > 0) {
                 const pulled = Math.min(maxAmount, this.inventory.get(res));
                 this.inventory.remove(res, pulled);
@@ -163,7 +163,7 @@ export abstract class BaseBuilding {
     getUpdatedNode(): Node {
         const updatedInventory: Record<string, number> = {};
         // Copy all resources
-        for (const res of ['iron-ore', 'coal', 'stone', 'copper-ore', ResourceType.IRON_PLATE, ResourceType.IRON_GEAR]) {
+        for (const res of ['iron-ore', 'coal', 'stone', 'copper-ore', ResourceType.IRON_PLATE, ResourceType.COPPER_PLATE, ResourceType.STEEL_PLATE, ResourceType.IRON_GEAR, ResourceType.STEEL_GEAR]) {
             const amt = this.inventory.get(res);
             if (amt > 0) updatedInventory[res] = amt;
         }

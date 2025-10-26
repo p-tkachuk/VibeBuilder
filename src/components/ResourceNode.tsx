@@ -26,6 +26,8 @@ export const ResourceNode: React.FC<ResourceNodeProps> = ({ data }) => {
     width: data.width,
     height: data.height,
     backgroundColor: RESOURCE_COLORS[data.resourceType],
+    color: RESOURCE_COLORS[data.resourceType],
+    textShadow: '-1px -1px 3px white, 1px -1px 3px white, -1px 1px 3px white, 1px 1px 3px white',
     opacity: OPACITY.RESOURCE_FIELD,
     border: `2px solid ${RESOURCE_COLORS[data.resourceType]}`,
     cursor: isOre ? 'pointer' : 'default',
