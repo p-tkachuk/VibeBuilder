@@ -25,7 +25,8 @@ export enum BuildingType {
 export enum BuildingSpecialty {
   MINER = 'copper-miner',
   FACTORY = 'factory',
-  UTILITY = 'utility'
+  UTILITY = 'utility',
+  STORAGE = 'storage',
 }
 
 export const BUILDING_CONFIGS = {
@@ -108,6 +109,6 @@ export const BUILDING_CONFIGS = {
     outputs: { 'any': undefined },
     cost: { stone: 10 },
     capacity: GAME_CONFIG.storageCapacity,
-    specialty: BuildingSpecialty.UTILITY
+    specialty: BuildingSpecialty.STORAGE
   }
 };
