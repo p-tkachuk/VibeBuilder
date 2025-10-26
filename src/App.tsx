@@ -52,7 +52,6 @@ export default function App() {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [resourceInventory] = useState(() => new ResourceInventoryService());
-  const [hoveredResourceNodeId, setHoveredResourceNodeId] = useState<string | null>(null);
 
   // Use custom hooks for separation of concerns
   const { resourceNodes, resourceFields } = useResourceFields();
@@ -159,12 +158,6 @@ export default function App() {
           onNodesChange={onNodesChangeWrapper}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
-          onNodeMouseEnter={(_, node) => {
-            if (node.type === 'resource') {
-              setHoveredResourceNodeId(node.id);
-            }
-          }}
-          onNodeMouseLeave={() => setHoveredResourceNodeId(null)}
           onNodeClick={(_, node) => {
             if (node.type === 'resource' && (node.data.resourceType as string)) {
               const resourceType = node.data.resourceType as string;
@@ -176,8 +169,15 @@ export default function App() {
               }
             }
           }}
+          onPaneContextMenu={(event) => {
+            event.preventDefault();
+            if (selectedBuildingType) {
+              clearSelection();
+            }
+          }}
           nodeTypes={nodeTypes as NodeTypes}
           fitView
+          zoomOnDoubleClick={false}
           defaultEdgeOptions={{
             style: {
               stroke: '#00FFFF',
