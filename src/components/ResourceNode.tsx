@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ResourceType, RESOURCE_COLORS, RESOURCE_PATTERNS, isOreType } from '../types/terrain';
 import styles from './ResourceNode.module.css';
 import { OPACITY } from '../constants/game.constants';
@@ -19,6 +19,7 @@ interface ResourceNodeProps {
  * Follows Single Responsibility Principle - only handles resource field rendering
  */
 export const ResourceNode: React.FC<ResourceNodeProps> = ({ data }) => {
+  const [isHovered, setIsHovered] = useState(false);
   const isOre = isOreType(data.resourceType);
 
   const dynamicStyle = {
@@ -28,12 +29,20 @@ export const ResourceNode: React.FC<ResourceNodeProps> = ({ data }) => {
     opacity: OPACITY.RESOURCE_FIELD,
     border: `2px solid ${RESOURCE_COLORS[data.resourceType]}`,
     cursor: isOre ? 'pointer' : 'default',
-  };
+    pointerEvents: isOre ? 'auto' : 'none',
+  } as React.CSSProperties;
 
   return (
-    <div className={styles.container} style={dynamicStyle}>
+    <div
+      className={styles.container}
+      style={dynamicStyle}
+      onMouseEnter={() => isOre && setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       {RESOURCE_PATTERNS[data.resourceType]}
-      {/* Pickaxe icon will be added via CSS pseudo-element or overlay */}
+      {isHovered && isOre && (
+        <div className={styles.miningIcon}>⛏️</div>
+      )}
     </div>
   );
 };
