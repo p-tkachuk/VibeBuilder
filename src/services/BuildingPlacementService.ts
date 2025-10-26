@@ -129,6 +129,7 @@ export class BuildingPlacementService {
                 buildingType,
                 label: config.name,
                 inventory: {},
+                specialty: config.specialty,
             },
         };
     }

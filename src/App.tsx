@@ -16,8 +16,8 @@ import { useKeyboardActions } from './hooks/useKeyboardActions';
 import { COLORS } from './constants/game.constants';
 import { GAME_CONFIG } from './config/game.config';
 import { ResourceInventoryService } from './services/ResourceInventoryService';
-import { BuildingOperationService } from './services/BuildingOperationService';
 import { NodeValidationService } from './services/NodeValidationService';
+import { TickProcessor } from './simulation/TickProcessor';
 
 const initialNodes: Node[] = [
   {
@@ -88,7 +88,7 @@ export default function App() {
   const totalResources = useMemo(() => {
     const totals: Record<string, number> = { ...resourceInventory.getInventory() };
     nodes.forEach(node => {
-      if (node.type === 'building' && node.data.inventory) {
+      if (node.type === 'building' && node.data.buildingType === BuildingType.STORAGE && node.data.inventory) {
         Object.entries(node.data.inventory).forEach(([key, value]) => {
           totals[key] = (totals[key] || 0) + value;
         });
@@ -100,7 +100,7 @@ export default function App() {
   // Building operations ticker
   useEffect(() => {
     const interval = setInterval(() => {
-      setNodes((prevNodes) => BuildingOperationService.processBuildings(prevNodes, edges, resourceFields));
+      setNodes((prevNodes) => TickProcessor.processTick(prevNodes, edges, resourceFields));
     }, 1000);
     return () => clearInterval(interval);
   }, [edges, resourceFields]);

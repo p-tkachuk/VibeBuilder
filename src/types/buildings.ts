@@ -36,9 +36,10 @@ export const BUILDING_CONFIGS = {
     color: '#B87333',
     icon: '⛏️',
     inputs: {},
-    outputs: { 'copper-ore': 2 },
+    outputs: { 'copper-ore': 1 },
     cost: { stone: 5 },
-    specialty: BuildingSpecialty.MINER
+    specialty: BuildingSpecialty.MINER,
+    inventoryCapacity: 10
   },
   [BuildingType.COAL_MINER]: {
     name: 'Coal Miner',
@@ -46,9 +47,10 @@ export const BUILDING_CONFIGS = {
     color: '#2F2F2F',
     icon: '⛏️',
     inputs: {},
-    outputs: { 'coal': 2 },
+    outputs: { 'coal': 1 },
     cost: { stone: 5 },
-    specialty: BuildingSpecialty.MINER
+    specialty: BuildingSpecialty.MINER,
+    inventoryCapacity: 10
   },
   [BuildingType.IRON_MINER]: {
     name: 'Iron Miner',
@@ -56,9 +58,10 @@ export const BUILDING_CONFIGS = {
     color: '#8B4513',
     icon: '⛏️',
     inputs: {},
-    outputs: { 'iron-ore': 2 },
+    outputs: { 'iron-ore': 1 },
     cost: { stone: 5 },
-    specialty: BuildingSpecialty.MINER
+    specialty: BuildingSpecialty.MINER,
+    inventoryCapacity: 10
   },
   [BuildingType.STONE_MINER]: {
     name: 'Stone Miner',
@@ -66,9 +69,10 @@ export const BUILDING_CONFIGS = {
     color: '#696969',
     icon: '⛏️',
     inputs: {},
-    outputs: { stone: 2 },
+    outputs: { stone: 1 },
     cost: { stone: 5 },
-    specialty: BuildingSpecialty.MINER
+    specialty: BuildingSpecialty.MINER,
+    inventoryCapacity: 10
   },
   [BuildingType.SMELTER]: {
     name: 'Iron Smelter',
@@ -78,7 +82,8 @@ export const BUILDING_CONFIGS = {
     inputs: { [ResourceType.IRON_ORE]: 2 },
     outputs: { [ResourceType.IRON_PLATE]: 1 },
     cost: { stone: 10, [ResourceType.IRON_ORE]: 5 },
-    specialty: BuildingSpecialty.FACTORY
+    specialty: BuildingSpecialty.FACTORY,
+    inventoryCapacity: 10
   },
   [BuildingType.ASSEMBLER]: {
     name: 'Iron Gear Assembler',
@@ -88,7 +93,8 @@ export const BUILDING_CONFIGS = {
     inputs: { [ResourceType.IRON_PLATE]: 1 },
     outputs: { [ResourceType.IRON_GEAR]: 1 },
     cost: { stone: 10, [ResourceType.IRON_PLATE]: 10 },
-    specialty: BuildingSpecialty.FACTORY
+    specialty: BuildingSpecialty.FACTORY,
+    inventoryCapacity: 10
   },
   [BuildingType.SPLITTER]: {
     name: 'Item Splitter',
@@ -98,7 +104,8 @@ export const BUILDING_CONFIGS = {
     inputs: { 'any': 2 },
     outputs: { 'any-0': 1, 'any-1': 1 },
     cost: { [ResourceType.IRON_PLATE]: 5, [ResourceType.COPPER_ORE]: 5 },
-    specialty: BuildingSpecialty.UTILITY
+    specialty: BuildingSpecialty.UTILITY,
+    inventoryCapacity: 10
   },
   [BuildingType.STORAGE]: {
     name: 'Storage',

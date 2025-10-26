@@ -88,16 +88,11 @@ export const BuildingNode: React.FC<BuildingNodeProps> = ({ data, ghost }) => {
           {Object.entries(config.outputs || {}).map(([res, amt]) => `${amt} ${res}`).join(', ')} /s
         </div>
       )}
-      {data.inventory && Object.keys(data.inventory).length > 0 && !(config as any).capacity && config.specialty !== BuildingSpecialty.FACTORY && (
-        <div className={styles.inventory}>
-          {Object.entries(data.inventory).map(([key, value]) => `${key}: ${value}`).join(', ')}
-        </div>
-      )}
 
       {renderInputHandles()}
       {renderOutputHandles()}
 
-      {isHovered && data.buildingType === BuildingType.STORAGE && data.inventory && (
+      {isHovered && data.inventory && (
         <div className={styles.tooltip}>
           <strong>Inventory:</strong><br />
           {Object.entries(data.inventory).map(([key, value]) => (
