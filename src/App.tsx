@@ -52,6 +52,7 @@ export default function App() {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [resourceInventory] = useState(() => new ResourceInventoryService());
+  const [inventoryChangeCount, setInventoryChangeCount] = useState(0);
 
   // Use custom hooks for separation of concerns
   const { resourceNodes, resourceFields } = useResourceFields();
@@ -104,7 +105,7 @@ export default function App() {
       }
     });
     return totals;
-  }, [nodes, resourceInventory]);
+  }, [nodes, resourceInventory, inventoryChangeCount]);
 
   // Building operations ticker
   useEffect(() => {
@@ -163,6 +164,7 @@ export default function App() {
               const resourceType = node.data.resourceType as string;
               const result = resourceInventory.addResource(resourceType, 1);
               if (result.success) {
+                setInventoryChangeCount(prev => prev + 1);
                 showToast(`Mined 1 ${resourceType}`);
               } else {
                 showToast('Storage capacity reached!');
