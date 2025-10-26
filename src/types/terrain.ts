@@ -34,3 +34,14 @@ export const RESOURCE_PATTERNS = {
   [ResourceType.IRON_PLATE]: '🟫',
   [ResourceType.IRON_GEAR]: '⚙️'
 };
+
+export const ORE_TYPES = [
+  ResourceType.IRON_ORE,
+  ResourceType.COAL,
+  ResourceType.COPPER_ORE,
+  ResourceType.STONE
+];
+
+export const isOreType = (resourceType: ResourceType): boolean => {
+  return ORE_TYPES.includes(resourceType);
+};

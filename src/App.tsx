@@ -31,6 +31,7 @@ const initialNodes: Node[] = [
     draggable: false,
     selectable: false,
     deletable: false,
+    style: { pointerEvents: 'none' },
   },
 ];
 const initialEdges: Edge[] = [];
@@ -51,6 +52,7 @@ export default function App() {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [resourceInventory] = useState(() => new ResourceInventoryService());
+  const [hoveredResourceNodeId, setHoveredResourceNodeId] = useState<string | null>(null);
 
   // Use custom hooks for separation of concerns
   const { resourceNodes, resourceFields } = useResourceFields();
@@ -75,6 +77,14 @@ export default function App() {
 
   // Handle keyboard actions
   useKeyboardActions(selectedBuildingType, clearSelection, handleDeleteSelected);
+
+  const showToast = useCallback((message: string) => {
+    setToastMessage(message);
+  }, []);
+
+  const hideToast = useCallback(() => {
+    setToastMessage(null);
+  }, []);
 
   const allNodes = useMemo(() => [
     ...resourceNodes,
@@ -104,14 +114,6 @@ export default function App() {
     }, 1000);
     return () => clearInterval(interval);
   }, [edges, resourceFields]);
-
-  const showToast = useCallback((message: string) => {
-    setToastMessage(message);
-  }, []);
-
-  const hideToast = useCallback(() => {
-    setToastMessage(null);
-  }, []);
 
   const onNodesChangeWrapper = useCallback(
     (changes: NodeChange[]) => {
@@ -157,6 +159,23 @@ export default function App() {
           onNodesChange={onNodesChangeWrapper}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onNodeMouseEnter={(_, node) => {
+            if (node.type === 'resource') {
+              setHoveredResourceNodeId(node.id);
+            }
+          }}
+          onNodeMouseLeave={() => setHoveredResourceNodeId(null)}
+          onNodeClick={(_, node) => {
+            if (node.type === 'resource' && (node.data.resourceType as string)) {
+              const resourceType = node.data.resourceType as string;
+              const result = resourceInventory.addResource(resourceType, 1);
+              if (result.success) {
+                showToast(`Mined 1 ${resourceType}`);
+              } else {
+                showToast('Storage capacity reached!');
+              }
+            }
+          }}
           nodeTypes={nodeTypes as NodeTypes}
           fitView
           defaultEdgeOptions={{
