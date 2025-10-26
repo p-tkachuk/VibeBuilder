@@ -13,7 +13,7 @@ import { Toast } from './components/Toast';
 import { useResourceFields } from './hooks/useResourceFields';
 import { useBuildingPlacement } from './hooks/useBuildingPlacement';
 import { useKeyboardActions } from './hooks/useKeyboardActions';
-import { COLORS } from './constants/game.constants';
+import { COLORS, EDGE_OPTIONS } from './constants/game.constants';
 import { GAME_CONFIG } from './config/game.config';
 import { ResourceInventoryService } from './services/ResourceInventoryService';
 import { NodeValidationService } from './services/NodeValidationService';
@@ -67,8 +67,8 @@ export default function App() {
       // Count storage buildings being deleted
       const deletedStorageBuildings = nds.filter((n) => n.selected && n.type === 'building' && n.data.buildingType === BuildingType.STORAGE);
       if (deletedStorageBuildings.length > 0) {
-        // Decrease storage capacity by 1000 per deleted storage building
-        resourceInventory.decreaseStorageCapacity(deletedStorageBuildings.length * 1000);
+        // Decrease storage capacity by GAME_CONFIG.storageCapacity per deleted storage building
+        resourceInventory.decreaseStorageCapacity(deletedStorageBuildings.length * GAME_CONFIG.storageCapacity);
       }
       setEdges((eds) => eds.filter((e) => !e.selected && !deletedNodeIds.includes(e.source) && !deletedNodeIds.includes(e.target)));
       return nds.filter((n) => !n.selected);
@@ -182,8 +182,8 @@ export default function App() {
           zoomOnDoubleClick={false}
           defaultEdgeOptions={{
             style: {
-              stroke: '#00FFFF',
-              strokeWidth: 2,
+              stroke: COLORS.EDGE_STROKE,
+              strokeWidth: EDGE_OPTIONS.STROKE_WIDTH,
             },
           }}
           style={{ backgroundColor: COLORS.TERRAIN_PRIMARY }}

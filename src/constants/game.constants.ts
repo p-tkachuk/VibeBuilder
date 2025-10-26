@@ -25,6 +25,12 @@ export const COLORS = {
     SELECTED_BUILDING: '#4CAF50',
     SELECTED_BORDER: '#81C784',
     HANDLE_BACKGROUND: '#555',
+    EDGE_STROKE: '#00FFFF',
+} as const;
+
+// Edge options
+export const EDGE_OPTIONS = {
+    STROKE_WIDTH: 2,
 } as const;
 
 // Sizes

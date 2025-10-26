@@ -43,16 +43,16 @@ export const GAME_CONFIG: GameConfig = {
     // Number of each resource type to generate
     resourceCount: {
         'iron-ore': 2,
-        coal: 2,
-        'copper-ore': 2,
-        stone: 2,
+        coal: 1,
+        'copper-ore': 1,
+        stone: 1,
     },
 
     // Resource field size ranges
     resourceFieldSize: {
-        minWidth: 120,
+        minWidth: 160,
         maxWidth: 200,
-        minHeight: 80,
+        minHeight: 100,
         maxHeight: 140,
     },
 

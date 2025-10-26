@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { useReactFlow, type Node } from '@xyflow/react';
 import { BuildingType, BUILDING_CONFIGS } from '../types/buildings';
+import { GAME_CONFIG } from '../config/game.config';
 import { BuildingPlacementService } from '../services/BuildingPlacementService';
 import { useGhostPreview } from '../hooks/useGhostPreview';
 import { GhostPreview } from './GhostPreview';
@@ -95,8 +96,8 @@ export const BuildingPlacementHandler: React.FC<BuildingPlacementHandlerProps> =
             }
 
             // If storage building, increase capacity
-            if (selectedBuildingType === 'storage') {
-                resourceInventory.increaseStorageCapacity(1000);
+            if (selectedBuildingType === BuildingType.STORAGE) {
+                resourceInventory.increaseStorageCapacity(GAME_CONFIG.storageCapacity);
             }
 
             onBuildingPlaced(newNode);

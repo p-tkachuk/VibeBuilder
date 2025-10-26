@@ -9,7 +9,7 @@ interface ResourcePanelProps {
 /**
  * ResourcePanel component - displays current resource counts
  */
-export const ResourcePanel: React.FC<ResourcePanelProps> = ({ resources, storageCapacity }) => {
+export const ResourcePanel: React.FC<ResourcePanelProps> = ({ resources }) => {
     const totalStored = Object.values(resources).reduce((sum, count) => sum + count, 0);
 
     return (
@@ -33,7 +33,7 @@ export const ResourcePanel: React.FC<ResourcePanelProps> = ({ resources, storage
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', opacity: 0.8 }}>
                 <span>📦</span>
-                <span>{totalStored}/{storageCapacity}</span>
+                <span>{totalStored}</span>
             </div>
         </div>
     );

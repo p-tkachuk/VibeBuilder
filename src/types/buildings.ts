@@ -115,7 +115,7 @@ export const BUILDING_CONFIGS = {
     inputs: { 'any': 2 },
     outputs: { 'any': 2 },
     cost: { stone: 10 },
-    capacity: GAME_CONFIG.storageCapacity,
+    inventoryCapacity: GAME_CONFIG.storageCapacity,
     specialty: BuildingSpecialty.STORAGE
   }
 };

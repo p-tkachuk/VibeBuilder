@@ -76,9 +76,9 @@ export const BuildingNode: React.FC<BuildingNodeProps> = ({ data, ghost }) => {
     >
       <div className={styles.icon}>{config.icon}</div>
       <div>{data.label}</div>
-      {(config as any).capacity !== undefined && (
+      {config.inventoryCapacity !== undefined && data.buildingType === BuildingType.STORAGE && (
         <div className={styles.storage}>
-          Storage: {data.inventory ? Object.values(data.inventory).reduce((sum, v) => sum + v, 0) : 0} / {(config as any).capacity}
+          Storage: {data.inventory ? Object.values(data.inventory).reduce((sum, v) => sum + v, 0) : 0} / {config.inventoryCapacity}
         </div>
       )}
       {(data.buildingType !== BuildingType.STORAGE) && (Object.keys(config.outputs || {}).length > 0 || Object.keys(config.inputs || {}).length > 0) && (
