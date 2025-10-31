@@ -2,10 +2,6 @@ import { BaseBuilding } from './BaseBuilding';
 import { BUILDING_CONFIGS } from '../../types/buildings';
 
 export class Storage extends BaseBuilding {
-    tick(): void {
-        this.phasePull();
-    }
-
     phaseProduce(): void {
         // Doesn't produce
     }

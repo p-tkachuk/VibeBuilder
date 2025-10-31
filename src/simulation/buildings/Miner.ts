@@ -19,10 +19,6 @@ export class Miner extends BaseBuilding {
         this.resourceFields = resourceFields || [];
     }
 
-    tick(): void {
-        this.phaseProduce();
-    }
-
     phaseProduce(): void {
         // Check if building has enough energy
         const config = BUILDING_CONFIGS[this.type] as any;

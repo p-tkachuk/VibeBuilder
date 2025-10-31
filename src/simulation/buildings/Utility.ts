@@ -3,11 +3,6 @@ import { BUILDING_CONFIGS } from '../../types/buildings';
 import { ResourceType } from '../../types/terrain';
 
 export class Utility extends BaseBuilding {
-    tick(): void {
-        this.phasePull();
-        this.phaseConsumeAndProduce();
-    }
-
     phaseProduce(): void {
         // No direct production
     }

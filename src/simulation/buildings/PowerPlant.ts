@@ -11,11 +11,6 @@ export class PowerPlant extends BaseBuilding {
         this.resourceInventory = resourceInventory;
     }
 
-    tick(): void {
-        this.phasePull();
-        this.phaseConsumeAndProduce();
-    }
-
     phaseProduce(): void {
         // Power plants don't produce directly from resources like miners
     }

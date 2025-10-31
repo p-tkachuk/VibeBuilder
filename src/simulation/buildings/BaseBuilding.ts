@@ -100,8 +100,6 @@ export abstract class BaseBuilding {
         return energyInputEdges.map(edge => this.allNodes.find(n => n.id === edge.source)).filter(n => n) as Node[];
     }
 
-    abstract tick(): void;
-
     protected hasConnectedInput(): boolean {
         return this.edges.some(edge => edge.target === this.id);
     }
@@ -132,9 +130,7 @@ export abstract class BaseBuilding {
         });
     }
 
-    protected pushResource(_toBuilding: BaseBuilding, _resource: string, _amount: number): boolean {
-        return false;
-    }
+
 
     protected getOutputResources(): string[] {
         const config = BUILDING_CONFIGS[this.type];
@@ -170,18 +166,7 @@ export abstract class BaseBuilding {
         return null;
     }
 
-    /*pullAnyResourceExcluding(excludedResources: string[], maxAmount: number): { resource: string, pulled: number } | null {
-        // Find a resource with at least 1, that is in outputs and not excluded
-        const outputResources = this.getOutputResources();
-        for (const res of ['iron-ore', 'coal', 'stone', 'copper-ore', ResourceType.IRON_PLATE, ResourceType.COPPER_PLATE, ResourceType.STEEL_PLATE, ResourceType.IRON_GEAR, ResourceType.STEEL_GEAR]) {
-            if (outputResources.includes(res) && this.inventory.get(res) > 0 && !excludedResources.includes(res)) {
-                const pulled = Math.min(maxAmount, this.inventory.get(res));
-                this.inventory.remove(res, pulled);
-                return { resource: res, pulled };
-            }
-        }
-        return null;
-    }*/
+
 
     phaseProduce(): void {
         // Default: do nothing (miner overrides)
