@@ -1,5 +1,6 @@
 import { BaseBuilding } from './BaseBuilding';
 import { BUILDING_CONFIGS } from '../../types/buildings';
+import { ResourceType } from '../../types/terrain';
 
 export class Factory extends BaseBuilding {
     tick(): void {
@@ -53,6 +54,22 @@ export class Factory extends BaseBuilding {
         if (!this.hasConnectedOutput()) return;
 
         const config = BUILDING_CONFIGS[this.type];
+        const energyConsumption = config.energyConsumption || 0;
+
+        if (energyConsumption > 0) {
+            let pulledAmount = 0;
+            for (const supplier of this.energySuppliers) {
+                const pulled = supplier.pullResource(ResourceType.ENERGY, energyConsumption - pulledAmount);
+                pulledAmount += pulled;
+                if (pulledAmount >= energyConsumption) break;
+            }
+
+            if (energyConsumption < energyConsumption) {
+                // can not produce, return
+                return;
+            }
+        }
+
         const inputs = config.inputs as Record<string, number>;
         const totalNeeded: Record<string, number> = {};
         for (const [resource, needed] of Object.entries(inputs)) {

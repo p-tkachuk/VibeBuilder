@@ -1,14 +1,16 @@
 import type { Node, Edge } from '@xyflow/react';
 import { BuildingType, BuildingSpecialty, BUILDING_CONFIGS } from '../types/buildings';
 import type { ResourceField } from '../types/terrain';
+import { ResourceInventoryService } from '../services/ResourceInventoryService';
 import { BaseBuilding } from './buildings/BaseBuilding';
 import { Miner } from './buildings/Miner';
 import { Factory } from './buildings/Factory';
 import { Utility } from './buildings/Utility';
 import { Storage } from './buildings/Storage';
+import { PowerPlant } from './buildings/PowerPlant';
 
 export class TickProcessor {
-    static processTick(nodes: Node[], edges: Edge[], resourceFields: ResourceField[]): Node[] {
+    static processTick(nodes: Node[], edges: Edge[], resourceFields: ResourceField[], resourceInventory?: ResourceInventoryService): Node[] {
         // Each tick, we temporarily create building instances, process their logic, and update the nodes
         // This ensures that building logic is driven by the immutable node state
         // Node creation/update performance is acceptable for typical game configurations
@@ -18,7 +20,7 @@ export class TickProcessor {
         // Instantiate building objects for processing this tick
         nodes.forEach(node => {
             if (node.type === 'building') {
-                const building = this.createBuilding(node, edges, nodes, edges, resourceFields);
+                const building = this.createBuilding(node, edges, nodes, edges, resourceFields, resourceInventory);
                 if (building) {
                     buildings[node.id] = building;
                 }
@@ -31,8 +33,11 @@ export class TickProcessor {
         });
 
         // Process in separate phases: produce, pull, consume-produce
+        Object.values(buildings).filter(b => b.specialty === BuildingSpecialty.POWER_PLANT).forEach(building => building.phasePull());
+        Object.values(buildings).filter(b => b.specialty === BuildingSpecialty.POWER_PLANT).forEach(building => building.phaseConsumeAndProduce());
+
         Object.values(buildings).filter(b => b.specialty === BuildingSpecialty.MINER).forEach(building => building.phaseProduce());
-        Object.values(buildings).forEach(building => building.phasePull());
+        Object.values(buildings).filter(b => b.specialty !== BuildingSpecialty.POWER_PLANT).forEach(building => building.phasePull());
         Object.values(buildings).filter(b => b.specialty === BuildingSpecialty.FACTORY || b.specialty === BuildingSpecialty.UTILITY).forEach(building => building.phaseConsumeAndProduce());
 
         // Update nodes with the processed inventory states
@@ -44,7 +49,7 @@ export class TickProcessor {
         });
     }
 
-    private static createBuilding(node: Node, edges: Edge[], allNodes: Node[], allEdges: Edge[], resourceFields: ResourceField[]): BaseBuilding {
+    private static createBuilding(node: Node, edges: Edge[], allNodes: Node[], allEdges: Edge[], resourceFields: ResourceField[], resourceInventory?: ResourceInventoryService): BaseBuilding {
         const buildingType = node.data.buildingType as BuildingType;
         if (!buildingType) throw new Error(`Invalid building type for node ${node.id}`);
 
@@ -62,6 +67,8 @@ export class TickProcessor {
                 return new Utility(node, edges, allNodes, allEdges);
             case BuildingSpecialty.STORAGE:
                 return new Storage(node, edges, allNodes, allEdges);
+            case BuildingSpecialty.POWER_PLANT:
+                return new PowerPlant(node, edges, allNodes, allEdges, resourceInventory);
             default:
                 throw new Error(`Unsupported building specialty ${specialty} for node ${node.id}`);
         }

@@ -110,10 +110,10 @@ export default function App() {
   // Building operations ticker
   useEffect(() => {
     const interval = setInterval(() => {
-      setNodes((prevNodes) => TickProcessor.processTick(prevNodes, edges, resourceFields));
+      setNodes((prevNodes) => TickProcessor.processTick(prevNodes, edges, resourceFields, resourceInventory));
     }, 1000);
     return () => clearInterval(interval);
-  }, [edges, resourceFields]);
+  }, [edges, resourceFields, resourceInventory]);
 
   const onNodesChangeWrapper = useCallback(
     (changes: NodeChange[]) => {

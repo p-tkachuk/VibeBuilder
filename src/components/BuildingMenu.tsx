@@ -25,6 +25,7 @@ const ASSEMBLER_TYPES = [
 const UTILITY_BUILDINGS = [
   BuildingType.SPLITTER,
   BuildingType.STORAGE,
+  BuildingType.COAL_POWER_PLANT,
 ];
 
 interface BuildingMenuProps {

@@ -37,6 +37,7 @@ export const GhostPreview: React.FC<GhostPreviewProps> = ({
                     label: BUILDING_CONFIGS[selectedBuildingType].name,
                     id: 'ghost',
                     edges: [],
+                    specialty: BUILDING_CONFIGS[selectedBuildingType].specialty
                 }}
                 ghost
             />

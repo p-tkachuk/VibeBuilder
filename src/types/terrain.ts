@@ -17,7 +17,8 @@ export enum ResourceType {
   COPPER_PLATE = 'copper-plate',
   STEEL_PLATE = 'steel-plate',
   IRON_GEAR = 'iron-gear',
-  STEEL_GEAR = 'steel-gear'
+  STEEL_GEAR = 'steel-gear',
+  ENERGY = 'energy'
 }
 
 export const RESOURCE_COLORS = {
@@ -29,7 +30,8 @@ export const RESOURCE_COLORS = {
   [ResourceType.COPPER_PLATE]: '#FFD700',
   [ResourceType.STEEL_PLATE]: '#708090',
   [ResourceType.IRON_GEAR]: '#696969',
-  [ResourceType.STEEL_GEAR]: '#C0C0C0'
+  [ResourceType.STEEL_GEAR]: '#C0C0C0',
+  [ResourceType.ENERGY]: '#FFFF00'
 };
 
 export const RESOURCE_PATTERNS = {
@@ -41,7 +43,8 @@ export const RESOURCE_PATTERNS = {
   [ResourceType.COPPER_PLATE]: '■',
   [ResourceType.STEEL_PLATE]: '■',
   [ResourceType.IRON_GEAR]: '⚙',
-  [ResourceType.STEEL_GEAR]: '⚙'
+  [ResourceType.STEEL_GEAR]: '⚙',
+  [ResourceType.ENERGY]: '⚡'
 };
 
 export const ORE_TYPES = [

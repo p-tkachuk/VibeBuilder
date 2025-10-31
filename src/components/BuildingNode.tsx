@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import type { Edge } from '@xyflow/react';
-import { BuildingType, BUILDING_CONFIGS } from '../types/buildings';
+import { BuildingType, BUILDING_CONFIGS, BuildingSpecialty } from '../types/buildings';
 import styles from './BuildingNode.module.css';
 
 export interface BuildingNodeData {
@@ -9,6 +9,7 @@ export interface BuildingNodeData {
   label: string;
   id: string;
   edges: Edge[];
+  specialty: string;
   inventory?: Record<string, number>;
 }
 
@@ -38,12 +39,24 @@ export const BuildingNode: React.FC<BuildingNodeProps> = ({ data, ghost }) => {
 
   const renderInputHandles = () => {
     const hasInputs = Object.keys(config.inputs || {}).length > 0;
-    if (!hasInputs || ghost) return null;
+    const hasEnergyInput = data.specialty === BuildingSpecialty.MINER || data.specialty === BuildingSpecialty.FACTORY;
+    if ((!hasInputs && !hasEnergyInput) || ghost) return null;
 
-    const handleId = 'input';
-    const isConnected = data.edges.some(edge => edge.target === data.id && edge.targetHandle === handleId);
+    const handles = [];
 
-    return renderHandle(handleId, 'target', Position.Left, isConnected);
+    if (hasInputs) {
+      const handleId = 'input';
+      const isConnected = data.edges.some(edge => edge.target === data.id && edge.targetHandle === handleId);
+      handles.push(renderHandle(handleId, 'target', Position.Left, isConnected));
+    }
+
+    if (hasEnergyInput) {
+      const handleId = 'energy-input';
+      const isConnected = data.edges.some(edge => edge.target === data.id && edge.targetHandle === handleId);
+      handles.push(renderHandle(handleId, 'target', Position.Top, isConnected));
+    }
+
+    return handles;
   };
 
   const renderOutputHandles = () => {

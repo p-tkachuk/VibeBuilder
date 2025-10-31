@@ -64,6 +64,7 @@ export abstract class BaseBuilding {
     protected allEdges: Edge[];
 
     protected suppliers: BaseBuilding[];
+    protected energySuppliers: BaseBuilding[];
 
     constructor(node: Node, edges: Edge[], allNodes: Node[], allEdges: Edge[]) {
         this.node = node;
@@ -84,10 +85,19 @@ export abstract class BaseBuilding {
         }
 
         this.suppliers = []; // Set later
+        this.energySuppliers = []; // Set later
     }
 
     setSuppliers(buildings: Record<string, BaseBuilding>) {
         this.suppliers = this.getConnectedInputBuildings().map(n => buildings[n.id]).filter(b => b);
+        this.energySuppliers = this.getConnectedEnergyBuildings().map(n => buildings[n.id]).filter(b => b);
+    }
+
+    protected getConnectedEnergyBuildings(): Node[] {
+        const energyInputEdges = this.allEdges.filter(edge =>
+            edge.target === this.id && edge.targetHandle === 'energy-input'
+        );
+        return energyInputEdges.map(edge => this.allNodes.find(n => n.id === edge.source)).filter(n => n) as Node[];
     }
 
     abstract tick(): void;
@@ -108,6 +118,18 @@ export abstract class BaseBuilding {
     protected getConnectedOutputBuildings(): Node[] {
         const outputEdges = this.allEdges.filter(edge => edge.source === this.id);
         return outputEdges.map(edge => this.allNodes.find(n => n.id === edge.target)).filter(n => n) as Node[];
+    }
+
+    protected hasEnergyConnection(): boolean {
+        // Check if this building has an energy input connected to a power plant
+        const energyInputEdges = this.allEdges.filter(edge =>
+            edge.target === this.id && edge.targetHandle === 'energy-input'
+        );
+        return energyInputEdges.some(edge => {
+            const sourceNode = this.allNodes.find(n => n.id === edge.source);
+            const sourceBuildingType = sourceNode?.data.buildingType as BuildingType;
+            return BUILDING_CONFIGS[sourceBuildingType]?.specialty === BuildingSpecialty.POWER_PLANT;
+        });
     }
 
     protected pushResource(_toBuilding: BaseBuilding, _resource: string, _amount: number): boolean {
@@ -148,6 +170,19 @@ export abstract class BaseBuilding {
         return null;
     }
 
+    /*pullAnyResourceExcluding(excludedResources: string[], maxAmount: number): { resource: string, pulled: number } | null {
+        // Find a resource with at least 1, that is in outputs and not excluded
+        const outputResources = this.getOutputResources();
+        for (const res of ['iron-ore', 'coal', 'stone', 'copper-ore', ResourceType.IRON_PLATE, ResourceType.COPPER_PLATE, ResourceType.STEEL_PLATE, ResourceType.IRON_GEAR, ResourceType.STEEL_GEAR]) {
+            if (outputResources.includes(res) && this.inventory.get(res) > 0 && !excludedResources.includes(res)) {
+                const pulled = Math.min(maxAmount, this.inventory.get(res));
+                this.inventory.remove(res, pulled);
+                return { resource: res, pulled };
+            }
+        }
+        return null;
+    }*/
+
     phaseProduce(): void {
         // Default: do nothing (miner overrides)
     }
@@ -163,7 +198,7 @@ export abstract class BaseBuilding {
     getUpdatedNode(): Node {
         const updatedInventory: Record<string, number> = {};
         // Copy all resources
-        for (const res of ['iron-ore', 'coal', 'stone', 'copper-ore', ResourceType.IRON_PLATE, ResourceType.COPPER_PLATE, ResourceType.STEEL_PLATE, ResourceType.IRON_GEAR, ResourceType.STEEL_GEAR]) {
+        for (const res of ['iron-ore', 'coal', 'stone', 'copper-ore', ResourceType.IRON_PLATE, ResourceType.COPPER_PLATE, ResourceType.STEEL_PLATE, ResourceType.IRON_GEAR, ResourceType.STEEL_GEAR/*, ResourceType.ENERGY*/]) {
             const amt = this.inventory.get(res);
             if (amt > 0) updatedInventory[res] = amt;
         }

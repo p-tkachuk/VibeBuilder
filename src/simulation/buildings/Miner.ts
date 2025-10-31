@@ -24,6 +24,24 @@ export class Miner extends BaseBuilding {
     }
 
     phaseProduce(): void {
+        // Check if building has enough energy
+        const config = BUILDING_CONFIGS[this.type] as any;
+        const energyConsumption = config.energyConsumption || 0;
+
+        if (energyConsumption > 0) {
+            let pulledAmount = 0;
+            for (const supplier of this.energySuppliers) {
+                const pulled = supplier.pullResource(ResourceType.ENERGY, energyConsumption - pulledAmount);
+                pulledAmount += pulled;
+                if (pulledAmount >= energyConsumption) break;
+            }
+
+            if (pulledAmount < energyConsumption) {
+                // can not produce, return
+                return;
+            }
+        }
+
         // Check if placed over resource field
         const center = getBuildingCenter(this.node.position);
         if (!isPositionInResourceField(center, this.resourceFields, this.resourceFieldType as ResourceType)) return;
@@ -35,7 +53,6 @@ export class Miner extends BaseBuilding {
         if (this.inventory.getTotal() >= this.inventory.getCapacity()) return;
 
         // Get production amount from config
-        const config = BUILDING_CONFIGS[this.type];
         const outputs = config.outputs as Record<string, number>;
         const amount = outputs[this.resourceFieldType] || 1;
 

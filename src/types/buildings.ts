@@ -9,6 +9,7 @@ export interface Building {
   description: string;
   color: string;
   icon: string;
+  energyConsumption: number;
 }
 
 export enum BuildingType {
@@ -22,7 +23,8 @@ export enum BuildingType {
   ASSEMBLER = 'assembler',
   STEEL_ASSEMBLER = 'steel-assembler',
   SPLITTER = 'splitter',
-  STORAGE = 'storage'
+  STORAGE = 'storage',
+  COAL_POWER_PLANT = 'coal-power-plant'
 }
 
 export enum BuildingSpecialty {
@@ -30,6 +32,7 @@ export enum BuildingSpecialty {
   FACTORY = 'factory',
   UTILITY = 'utility',
   STORAGE = 'storage',
+  POWER_PLANT = 'power-plant',
 }
 
 export const BUILDING_CONFIGS = {
@@ -42,7 +45,8 @@ export const BUILDING_CONFIGS = {
     outputs: { 'copper-ore': 2 },
     cost: { stone: 5 },
     specialty: BuildingSpecialty.MINER,
-    inventoryCapacity: 10
+    inventoryCapacity: 10,
+    energyConsumption: 1
   },
   [BuildingType.COAL_MINER]: {
     name: 'Coal Miner',
@@ -53,7 +57,8 @@ export const BUILDING_CONFIGS = {
     outputs: { 'coal': 2 },
     cost: { stone: 5 },
     specialty: BuildingSpecialty.MINER,
-    inventoryCapacity: 10
+    inventoryCapacity: 10,
+    energyConsumption: 1
   },
   [BuildingType.IRON_MINER]: {
     name: 'Iron Miner',
@@ -64,7 +69,8 @@ export const BUILDING_CONFIGS = {
     outputs: { 'iron-ore': 2 },
     cost: { stone: 5 },
     specialty: BuildingSpecialty.MINER,
-    inventoryCapacity: 10
+    inventoryCapacity: 10,
+    energyConsumption: 1
   },
   [BuildingType.STONE_MINER]: {
     name: 'Stone Miner',
@@ -75,7 +81,8 @@ export const BUILDING_CONFIGS = {
     outputs: { stone: 2 },
     cost: { stone: 5 },
     specialty: BuildingSpecialty.MINER,
-    inventoryCapacity: 10
+    inventoryCapacity: 10,
+    energyConsumption: 1
   },
   [BuildingType.SMELTER]: {
     name: 'Iron Smelter',
@@ -86,7 +93,8 @@ export const BUILDING_CONFIGS = {
     outputs: { [ResourceType.IRON_PLATE]: 1 },
     cost: { stone: 10, [ResourceType.IRON_ORE]: 5 },
     specialty: BuildingSpecialty.FACTORY,
-    inventoryCapacity: 10
+    inventoryCapacity: 10,
+    energyConsumption: 2
   },
   [BuildingType.COPPER_SMELTER]: {
     name: 'Copper Smelter',
@@ -97,7 +105,8 @@ export const BUILDING_CONFIGS = {
     outputs: { [ResourceType.COPPER_PLATE]: 1 },
     cost: { stone: 10, [ResourceType.COPPER_ORE]: 5 },
     specialty: BuildingSpecialty.FACTORY,
-    inventoryCapacity: 10
+    inventoryCapacity: 10,
+    energyConsumption: 2
   },
   [BuildingType.STEEL_FURNACE]: {
     name: 'Steel Furnace',
@@ -108,7 +117,8 @@ export const BUILDING_CONFIGS = {
     outputs: { [ResourceType.STEEL_PLATE]: 1 },
     cost: { stone: 20, [ResourceType.IRON_PLATE]: 10, 'coal': 10 },
     specialty: BuildingSpecialty.FACTORY,
-    inventoryCapacity: 10
+    inventoryCapacity: 10,
+    energyConsumption: 2
   },
   [BuildingType.ASSEMBLER]: {
     name: 'Iron Gear Assembler',
@@ -119,7 +129,8 @@ export const BUILDING_CONFIGS = {
     outputs: { [ResourceType.IRON_GEAR]: 1 },
     cost: { stone: 10, [ResourceType.IRON_PLATE]: 10 },
     specialty: BuildingSpecialty.FACTORY,
-    inventoryCapacity: 10
+    inventoryCapacity: 10,
+    energyConsumption: 2
   },
   [BuildingType.STEEL_ASSEMBLER]: {
     name: 'Steel Gear Assembler',
@@ -130,7 +141,8 @@ export const BUILDING_CONFIGS = {
     outputs: { [ResourceType.STEEL_GEAR]: 1 },
     cost: { stone: 15, [ResourceType.STEEL_PLATE]: 5 },
     specialty: BuildingSpecialty.FACTORY,
-    inventoryCapacity: 10
+    inventoryCapacity: 10,
+    energyConsumption: 2
   },
   [BuildingType.SPLITTER]: {
     name: 'Item Splitter',
@@ -141,7 +153,8 @@ export const BUILDING_CONFIGS = {
     outputs: { 'any-0': 1, 'any-1': 1 },
     cost: { [ResourceType.IRON_PLATE]: 5, [ResourceType.COPPER_ORE]: 5 },
     specialty: BuildingSpecialty.UTILITY,
-    inventoryCapacity: 10
+    inventoryCapacity: 10,
+    energyConsumption: 0
   },
   [BuildingType.STORAGE]: {
     name: 'Storage',
@@ -152,6 +165,19 @@ export const BUILDING_CONFIGS = {
     outputs: { 'any': 2 },
     cost: { stone: 10 },
     inventoryCapacity: GAME_CONFIG.storageCapacity,
-    specialty: BuildingSpecialty.STORAGE
+    specialty: BuildingSpecialty.STORAGE,
+    energyConsumption: 0
+  },
+  [BuildingType.COAL_POWER_PLANT]: {
+    name: 'Coal Power Plant',
+    description: 'Burns coal to generate energy',
+    color: '#8B0000',
+    icon: '🏭',
+    inputs: { 'coal': 1 },
+    outputs: { [ResourceType.ENERGY]: 5 },
+    cost: { stone: 20 },
+    specialty: BuildingSpecialty.POWER_PLANT,
+    inventoryCapacity: 10,
+    energyConsumption: 0
   }
 };
