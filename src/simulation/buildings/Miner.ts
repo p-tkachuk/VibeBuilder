@@ -34,6 +34,7 @@ export class Miner extends BaseBuilding {
 
             if (pulledAmount < energyConsumption) {
                 // can not produce, return
+                this.setEnergyShortage();
                 return;
             }
         }

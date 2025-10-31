@@ -65,6 +65,7 @@ export abstract class BaseBuilding {
 
     protected suppliers: BaseBuilding[];
     protected energySuppliers: BaseBuilding[];
+    protected energyShortage: boolean = false;
 
     constructor(node: Node, edges: Edge[], allNodes: Node[], allEdges: Edge[]) {
         this.node = node;
@@ -168,6 +169,14 @@ export abstract class BaseBuilding {
 
 
 
+    resetEnergyShortage(): void {
+        this.energyShortage = false;
+    }
+
+    setEnergyShortage(): void {
+        this.energyShortage = true;
+    }
+
     phaseProduce(): void {
         // Default: do nothing (miner overrides)
     }
@@ -192,7 +201,8 @@ export abstract class BaseBuilding {
             ...this.node,
             data: {
                 ...this.node.data,
-                inventory: updatedInventory
+                inventory: updatedInventory,
+                energyShortage: this.energyShortage
             }
         };
     }

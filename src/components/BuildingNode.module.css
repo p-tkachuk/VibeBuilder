@@ -24,6 +24,32 @@
     margin-bottom: 4px;
 }
 
+.energyIcon {
+    font-size: 32px;
+    margin-bottom: 4px;
+    animation: pulse 0.5s infinite;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+}
+
+.energyShortageOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(135deg,
+            rgba(64, 64, 64, 0.6),
+            rgba(64, 64, 64, 0.6) 10px,
+            rgba(32, 32, 32, 0.6) 10px,
+            rgba(32, 32, 32, 0.6) 20px);
+    border-radius: 8px;
+    z-index: 5;
+}
+
 .handle {
     width: 8px;
     height: 8px;

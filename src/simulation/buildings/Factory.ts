@@ -59,8 +59,9 @@ export class Factory extends BaseBuilding {
                 if (pulledAmount >= energyConsumption) break;
             }
 
-            if (energyConsumption < energyConsumption) {
+            if (pulledAmount < energyConsumption) {
                 // can not produce, return
+                this.setEnergyShortage();
                 return;
             }
         }

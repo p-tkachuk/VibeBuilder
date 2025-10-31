@@ -11,6 +11,7 @@ export interface BuildingNodeData {
   edges: Edge[];
   specialty: string;
   inventory?: Record<string, number>;
+  energyShortage?: boolean;
 }
 
 interface BuildingNodeProps {
@@ -83,12 +84,18 @@ export const BuildingNode: React.FC<BuildingNodeProps> = ({ data, ghost }) => {
   return (
     <div
       className={`${styles.container} ${ghost ? styles.ghost : ''}`}
-      style={{ backgroundColor: config.color }}
+      style={{ backgroundColor: config.color, position: 'relative' }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className={styles.icon}>{config.icon}</div>
       <div>{data.label}</div>
+      {data.energyShortage && (
+        <>
+          <div className={styles.energyShortageOverlay}></div>
+          <div className={styles.energyIcon}>⚡</div>
+        </>
+      )}
       {config.inventoryCapacity !== undefined && data.buildingType === BuildingType.STORAGE && (
         <div className={styles.storage}>
           Storage: {data.inventory ? Object.values(data.inventory).reduce((sum, v) => sum + v, 0) : 0} / {config.inventoryCapacity}

@@ -30,6 +30,7 @@ export class TickProcessor {
         // Establish supplier relationships after instantiation
         Object.values(buildings).forEach(building => {
             building.setSuppliers(buildings);
+            building.resetEnergyShortage();
         });
 
         // Process in separate phases: produce, pull, consume-produce

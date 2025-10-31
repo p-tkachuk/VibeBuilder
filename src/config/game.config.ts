@@ -67,7 +67,7 @@ export const GAME_CONFIG: GameConfig = {
 
     // Starting resources
     startingResources: {
-        stone: 35,
+        stone: 100,
         coal: 100
     },
 };
