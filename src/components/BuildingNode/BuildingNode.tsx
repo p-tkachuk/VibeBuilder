@@ -12,6 +12,7 @@ export interface BuildingNodeData {
   specialty: string;
   inventory?: Record<string, number>;
   energyShortage?: boolean;
+  selected?: boolean;
 }
 
 interface BuildingNodeProps {
@@ -83,7 +84,7 @@ export const BuildingNode: React.FC<BuildingNodeProps> = ({ data, ghost }) => {
 
   return (
     <div
-      className={`${styles.container} ${ghost ? styles.ghost : ''}`}
+      className={`${styles.container} ${ghost ? styles.ghost : ''} ${data.selected ? styles.selected : ''}`}
       style={{ backgroundColor: config.color, position: 'relative' }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -123,5 +124,3 @@ export const BuildingNode: React.FC<BuildingNodeProps> = ({ data, ghost }) => {
     </div>
   );
 };
-
-

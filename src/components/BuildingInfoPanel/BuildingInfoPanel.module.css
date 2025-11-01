@@ -1,0 +1,284 @@
+/* BuildingInfoPanel CSS Module */
+
+.container {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background-color: rgba(0, 0, 0, 0.9);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    min-width: 280px;
+    max-width: 320px;
+    max-height: 80vh;
+    overflow-y: auto;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    animation: slideIn 0.3s ease-out;
+    z-index: 1000;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.icon {
+    font-size: 24px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+}
+
+.titleSection {
+    flex: 1;
+}
+
+.title {
+    margin: 0;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.type {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.closeButton {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.closeButton:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.section {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 12px;
+}
+
+.section:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.sectionTitle {
+    margin: 0 0 8px 0;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Status Section */
+.statusGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+}
+
+.statusItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.statusLabel {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 13px;
+}
+
+.statusValue {
+    font-size: 13px;
+    font-weight: bold;
+    text-transform: capitalize;
+}
+
+/* Resource Flow Section */
+.resourceFlow {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.inputs,
+.outputs {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.flowLabel {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.resourceItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 8px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.resourceName {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 12px;
+}
+
+.resourceRate {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* Inventory Section */
+.inventory {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.inventoryItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 8px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.resourceAmount {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 13px;
+    font-weight: bold;
+}
+
+/* Stats Section */
+.stats {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.statItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.statLabel {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 12px;
+}
+
+.statValue {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* Connections Section */
+.connections {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.connectionItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.connectionLabel {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 12px;
+}
+
+.connectionValue {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 12px;
+    font-weight: bold;
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 2px 6px;
+    border-radius: 3px;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* Custom scrollbar styling for game aesthetic */
+.container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+.container::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Responsive design */
+@media (max-width: 1200px) {
+    .container {
+        max-width: 280px;
+        min-width: 250px;
+    }
+}
+
+@media (max-height: 600px) {
+    .container {
+        max-height: 70vh;
+    }
+}

@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 import { ReactFlow, useNodesState, useEdgesState, addEdge, type Node, type Edge, type NodeChange, type Connection, type NodeTypes, useReactFlow } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { BuildingMenu } from './components/BuildingMenu/BuildingMenu';
+import { BuildingInfoPanel } from './components/BuildingInfoPanel/BuildingInfoPanel';
 import { BuildingNode } from './components/BuildingNode/BuildingNode';
 import { ResourceNode } from './components/ResourceNode/ResourceNode';
 import { MapBorderNode } from './components/MapBorderNode/MapBorderNode';
@@ -86,6 +87,7 @@ export default function App() {
   const [menuState, setMenuState] = useState<MenuState>('closed');
   const [loadedResourceFields, setLoadedResourceFields] = useState<any[] | undefined>(undefined);
   const [isPaused, setIsPaused] = useState(false);
+  const [selectedBuildingNode, setSelectedBuildingNode] = useState<string | null>(null);
 
   // Initialize new state management system
   const [gameStateManager] = useState(() => new GameStateManager());
@@ -140,10 +142,10 @@ export default function App() {
     ...resourceNodes,
     ...nodes.map(node =>
       node.type === 'building'
-        ? { ...node, data: { ...node.data, id: node.id, edges } }
+        ? { ...node, data: { ...node.data, id: node.id, edges, selected: selectedBuildingNode === node.id } }
         : node
     ),
-  ], [resourceNodes, nodes, edges]);
+  ], [resourceNodes, nodes, edges, selectedBuildingNode]);
 
   const totalResources = useMemo(() => {
     const totals: Record<string, number> = { ...resourceInventory.getInventory() };
@@ -399,7 +401,14 @@ export default function App() {
               } else {
                 showToast('Storage capacity reached!');
               }
+            } else if (node.type === 'building') {
+              // Select building for info panel
+              setSelectedBuildingNode(node.id);
             }
+          }}
+          onPaneClick={() => {
+            // Clear building selection when clicking on empty space
+            setSelectedBuildingNode(null);
           }}
           onPaneContextMenu={(event) => {
             event.preventDefault();
@@ -461,6 +470,16 @@ export default function App() {
       {/* Pause Modal */}
       {isPaused && menuState === 'closed' && (
         <PauseModal onResume={() => setIsPaused(false)} />
+      )}
+
+      {/* Building Info Panel */}
+      {selectedBuildingNode && (
+        <BuildingInfoPanel
+          selectedBuildingId={selectedBuildingNode}
+          gameStateManager={gameStateManager}
+          buildingRegistry={buildingRegistry}
+          onClose={() => setSelectedBuildingNode(null)}
+        />
       )}
     </div>
   );

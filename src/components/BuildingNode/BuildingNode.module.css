@@ -19,6 +19,21 @@
     filter: blur(0.5px) grayscale(0.3);
 }
 
+.selected {
+    border: 3px solid #4CAF50;
+    box-shadow: 0 0 20px rgba(76, 175, 80, 0.6), 0 4px 8px rgba(0, 0, 0, 0.3);
+    animation: selectedGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes selectedGlow {
+    from {
+        box-shadow: 0 0 20px rgba(76, 175, 80, 0.6), 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+    to {
+        box-shadow: 0 0 30px rgba(76, 175, 80, 0.8), 0 6px 12px rgba(0, 0, 0, 0.4);
+    }
+}
+
 .icon {
     font-size: 20px;
     margin-bottom: 4px;
