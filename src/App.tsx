@@ -114,10 +114,16 @@ export default function App() {
         // Decrease storage capacity by GAME_CONFIG.storageCapacity per deleted storage building
         resourceInventory.decreaseStorageCapacity(deletedStorageBuildings.length * GAME_CONFIG.storageCapacity);
       }
+
+      // Unregister deleted buildings from building registry (this also removes them from game state manager)
+      deletedNodeIds.forEach(nodeId => {
+        buildingRegistry.unregister(nodeId);
+      });
+
       setEdges((eds) => eds.filter((e) => !e.selected && !deletedNodeIds.includes(e.source) && !deletedNodeIds.includes(e.target)));
       return nds.filter((n) => !n.selected);
     });
-  }, [setNodes, setEdges, resourceInventory]);
+  }, [setNodes, setEdges, resourceInventory, buildingRegistry]);
 
   // Handle keyboard actions
   useKeyboardActions(selectedBuildingType, clearSelection, handleDeleteSelected, menuState, setMenuState, isPaused, setIsPaused);
