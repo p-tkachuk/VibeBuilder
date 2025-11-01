@@ -3,6 +3,7 @@ import { BuildingType, BuildingSpecialty, BUILDING_CONFIGS } from '../../types/b
 import { ResourceType } from '../../types/terrain';
 import { GameStateManager } from '../../managers/GameStateManager';
 import { BuildingRegistry } from '../../managers/BuildingRegistry';
+import type { IEventBus } from '../../services/interfaces/IEventBus';
 
 export interface InventoryManager {
     add(resource: string, amount: number): boolean;
@@ -63,6 +64,7 @@ export class SimpleInventory implements InventoryManager {
 export abstract class BaseBuilding {
     protected gameStateManager: GameStateManager;
     protected buildingRegistry: BuildingRegistry;
+    protected eventBus: IEventBus;
 
     public id: string;
     public type: BuildingType;
@@ -83,10 +85,12 @@ export abstract class BaseBuilding {
         allNodes: Node[],
         allEdges: Edge[],
         gameStateManager: GameStateManager,
-        buildingRegistry: BuildingRegistry
+        buildingRegistry: BuildingRegistry,
+        eventBus: IEventBus
     ) {
         this.gameStateManager = gameStateManager;
         this.buildingRegistry = buildingRegistry;
+        this.eventBus = eventBus;
         this.node = node;
         this.edges = edges;
         this.allNodes = allNodes;
@@ -194,6 +198,28 @@ export abstract class BaseBuilding {
 
     setEnergyShortage(): void {
         this.energyShortage = true;
+        this.publishEvent('energy_shortage', {
+            requiredEnergy: this.getEnergyConsumption(),
+            availableEnergy: 0
+        });
+    }
+
+    protected publishEvent<T>(eventType: string, event: T): void {
+        this.eventBus.publish(eventType, {
+            ...event,
+            buildingId: this.id,
+            timestamp: Date.now()
+        });
+    }
+
+    protected getEnergyConsumption(): number {
+        const config = BUILDING_CONFIGS[this.type];
+        return config.energyConsumption;
+    }
+
+    protected getProducedResources(): Record<string, number> {
+        // Default implementation - override in subclasses
+        return {};
     }
 
     phaseProduce(): void {

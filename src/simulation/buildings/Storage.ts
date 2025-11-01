@@ -3,6 +3,7 @@ import { BaseBuilding } from './BaseBuilding';
 import { BUILDING_CONFIGS } from '../../types/buildings';
 import { GameStateManager } from '../../managers/GameStateManager';
 import { BuildingRegistry } from '../../managers/BuildingRegistry';
+import { ServiceLocator } from '../../services/ServiceLocator';
 
 export class Storage extends BaseBuilding {
     constructor(
@@ -13,7 +14,7 @@ export class Storage extends BaseBuilding {
         gameStateManager: GameStateManager,
         buildingRegistry: BuildingRegistry
     ) {
-        super(node, edges, allNodes, allEdges, gameStateManager, buildingRegistry);
+        super(node, edges, allNodes, allEdges, gameStateManager, buildingRegistry, ServiceLocator.get('IEventBus'));
     }
     phaseProduce(): void {
         // Doesn't produce

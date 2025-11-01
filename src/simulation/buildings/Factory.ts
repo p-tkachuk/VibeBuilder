@@ -4,6 +4,7 @@ import { BUILDING_CONFIGS } from '../../types/buildings';
 import { ResourceType } from '../../types/terrain';
 import { GameStateManager } from '../../managers/GameStateManager';
 import { BuildingRegistry } from '../../managers/BuildingRegistry';
+import { ServiceLocator } from '../../services/ServiceLocator';
 
 export class Factory extends BaseBuilding {
     constructor(
@@ -14,7 +15,7 @@ export class Factory extends BaseBuilding {
         gameStateManager: GameStateManager,
         buildingRegistry: BuildingRegistry
     ) {
-        super(node, edges, allNodes, allEdges, gameStateManager, buildingRegistry);
+        super(node, edges, allNodes, allEdges, gameStateManager, buildingRegistry, ServiceLocator.get('IEventBus'));
     }
     phaseProduce(): void {
         // No direct production for factory

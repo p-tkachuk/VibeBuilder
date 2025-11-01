@@ -4,6 +4,7 @@ import { GameStateManager } from './GameStateManager';
 import { BuildingRegistry } from './BuildingRegistry';
 import { BuildingType } from '../types/buildings';
 import type { ResourceField } from '../types/terrain';
+import type { IEventBus } from '../services/interfaces/IEventBus';
 
 // Lazy imports to avoid circular dependencies
 const createBuildingInstance = async (
@@ -13,6 +14,7 @@ const createBuildingInstance = async (
   allEdges: Edge[],
   gameStateManager: GameStateManager,
   buildingRegistry: BuildingRegistry,
+  _eventBus: IEventBus,
   resourceFields?: ResourceField[],
   resourceInventory?: any
 ): Promise<BaseBuilding | null> => {

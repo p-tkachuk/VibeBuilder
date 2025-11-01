@@ -28,6 +28,8 @@ import { SaveLoadService } from './services/SaveLoadService';
 import { GameStateManager } from './managers/GameStateManager';
 import { BuildingRegistry } from './managers/BuildingRegistry';
 import { StateSyncService } from './services/StateSyncService';
+import { ServiceLocator } from './services/ServiceLocator';
+import type { IEventBus } from './services/interfaces/IEventBus';
 
 /**
  * ViewportInitializer component - sets initial camera position to map center
@@ -87,7 +89,8 @@ export default function App() {
 
   // Initialize new state management system
   const [gameStateManager] = useState(() => new GameStateManager());
-  const [buildingRegistry] = useState(() => new BuildingRegistry(gameStateManager));
+  const [eventBus] = useState(() => ServiceLocator.get<IEventBus>('IEventBus'));
+  const [buildingRegistry] = useState(() => new BuildingRegistry(gameStateManager, eventBus));
   const [stateSyncService] = useState(() => new StateSyncService(gameStateManager));
 
   // IMPORTANT: React hooks must be called at the component level, never inside callbacks or conditional blocks

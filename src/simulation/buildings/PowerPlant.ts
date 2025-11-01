@@ -4,6 +4,7 @@ import { BUILDING_CONFIGS } from '../../types/buildings';
 import { ResourceInventoryService } from '../../services/ResourceInventoryService';
 import { GameStateManager } from '../../managers/GameStateManager';
 import { BuildingRegistry } from '../../managers/BuildingRegistry';
+import { ServiceLocator } from '../../services/ServiceLocator';
 
 export class PowerPlant extends BaseBuilding {
     private resourceInventory?: ResourceInventoryService;
@@ -17,7 +18,7 @@ export class PowerPlant extends BaseBuilding {
         buildingRegistry: BuildingRegistry,
         resourceInventory?: ResourceInventoryService
     ) {
-        super(node, edges, allNodes, allEdges, gameStateManager, buildingRegistry);
+        super(node, edges, allNodes, allEdges, gameStateManager, buildingRegistry, ServiceLocator.get('IEventBus'));
         this.resourceInventory = resourceInventory;
     }
 

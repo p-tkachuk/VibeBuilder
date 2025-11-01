@@ -1,0 +1,61 @@
+import { BuildingType, BuildingSpecialty } from '../../types/buildings';
+import type { BuildingConfig } from './index';
+
+export const minerConfigs: Record<string, BuildingConfig> = {
+  [BuildingType.COPPER_MINER]: {
+    name: 'Copper Miner',
+    description: 'Extracts copper ore from resource nodes',
+    color: '#B87333',
+    icon: '⛏️',
+    inputs: {},
+    outputs: { 'copper-ore': 2 },
+    cost: { stone: 5 },
+    specialty: BuildingSpecialty.MINER,
+    inventoryCapacity: 10,
+    energyConsumption: 1,
+    miningSpeed: 2, // ores per tick
+    miningRange: 50, // pixels
+  },
+  [BuildingType.COAL_MINER]: {
+    name: 'Coal Miner',
+    description: 'Extracts coal from resource nodes',
+    color: '#2F2F2F',
+    icon: '⛏️',
+    inputs: {},
+    outputs: { 'coal': 2 },
+    cost: { stone: 5 },
+    specialty: BuildingSpecialty.MINER,
+    inventoryCapacity: 10,
+    energyConsumption: 1,
+    miningSpeed: 2,
+    miningRange: 50,
+  },
+  [BuildingType.IRON_MINER]: {
+    name: 'Iron Miner',
+    description: 'Extracts iron ore from resource nodes',
+    color: '#8B4513',
+    icon: '⛏️',
+    inputs: {},
+    outputs: { 'iron-ore': 2 },
+    cost: { stone: 5 },
+    specialty: BuildingSpecialty.MINER,
+    inventoryCapacity: 10,
+    energyConsumption: 1,
+    miningSpeed: 2,
+    miningRange: 50,
+  },
+  [BuildingType.STONE_MINER]: {
+    name: 'Stone Miner',
+    description: 'Extracts stone from resource nodes',
+    color: '#696969',
+    icon: '⛏️',
+    inputs: {},
+    outputs: { stone: 2 },
+    cost: { stone: 5 },
+    specialty: BuildingSpecialty.MINER,
+    inventoryCapacity: 10,
+    energyConsumption: 1,
+    miningSpeed: 2,
+    miningRange: 50,
+  },
+};

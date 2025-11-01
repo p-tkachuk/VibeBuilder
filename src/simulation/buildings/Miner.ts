@@ -6,6 +6,7 @@ import { ResourceType } from '../../types/terrain';
 import type { ResourceField } from '../../types/terrain';
 import { GameStateManager } from '../../managers/GameStateManager';
 import { BuildingRegistry } from '../../managers/BuildingRegistry';
+import { ServiceLocator } from '../../services/ServiceLocator';
 
 export class Miner extends BaseBuilding {
     private resourceFieldType: string;
@@ -20,7 +21,7 @@ export class Miner extends BaseBuilding {
         buildingRegistry: BuildingRegistry,
         resourceFields?: ResourceField[]
     ) {
-        super(node, edges, allNodes, allEdges, gameStateManager, buildingRegistry);
+        super(node, edges, allNodes, allEdges, gameStateManager, buildingRegistry, ServiceLocator.get('IEventBus'));
 
         // Map output resource string
         const outputKeys = Object.keys(BUILDING_CONFIGS[this.type].outputs as Record<string, any>);

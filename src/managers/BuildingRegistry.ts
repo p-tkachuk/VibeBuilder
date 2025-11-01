@@ -3,18 +3,21 @@ import { BaseBuilding } from '../simulation/buildings/BaseBuilding';
 import { GameStateManager } from './GameStateManager';
 import type { BuildingState } from '../types/game-state';
 import type { ResourceField } from '../types/terrain';
+import type { IEventBus } from '../services/interfaces/IEventBus';
 import { createBuildingInstance } from './BuildingFactory';
 
 export class BuildingRegistry {
   private buildings = new Map<string, BaseBuilding>();
   private gameStateManager: GameStateManager;
+  private eventBus: IEventBus;
   private supplierCache = new Map<string, BaseBuilding[]>();
   private lastSupplierUpdate = 0;
   private lastKnownState = new Map<string, BuildingState>();
   private connectionManager: any = null; // Will be set by TickProcessor
 
-  constructor(gameStateManager: GameStateManager) {
+  constructor(gameStateManager: GameStateManager, eventBus: IEventBus) {
     this.gameStateManager = gameStateManager;
+    this.eventBus = eventBus;
   }
 
   setConnectionManager(connectionManager: any): void {
@@ -126,6 +129,7 @@ export class BuildingRegistry {
       allEdges,
       this.gameStateManager,
       this,
+      this.eventBus,
       resourceFields,
       resourceInventory
     );

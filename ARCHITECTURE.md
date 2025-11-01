@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the new state management architecture that separates game state from UI state, providing better performance, maintainability, and extensibility.
+This document describes the modernized architecture that implements a service-oriented, event-driven system with dependency injection, external configuration management, and plugin support. The architecture separates game state from UI state, providing better performance, maintainability, and extensibility.
 
 ## Architecture Components
 
@@ -164,3 +164,108 @@ Integration tests verify:
 - UI state synchronization
 - Save/load compatibility
 - Performance benchmarks vs old architecture
+
+## Modernized Service-Oriented Architecture
+
+### Service Layer Enhancement
+
+The architecture now implements a comprehensive service layer with dependency injection:
+
+#### Dependency Injection Framework (`src/di/`)
+- **Container.ts**: Lightweight DI container with registration and resolution
+- **ServiceProvider.ts**: Service registration and dependency wiring
+
+#### Service Interfaces (`src/services/interfaces/`)
+- **IGameStateManager**: Game state management abstraction
+- **IBuildingRegistry**: Building instance management abstraction
+- **IEventBus**: Event system abstraction
+- **IConfigService**: Configuration management abstraction
+- **ILogger**: Logging abstraction
+
+### Event-Driven Architecture
+
+Decoupled communication through a centralized event system:
+
+#### Event System (`src/events/`)
+- **EventBus.ts**: Central event bus with subscribe/publish pattern
+- **GameEvents.ts**: Game-wide event definitions
+- **BuildingEvents.ts**: Building-specific event definitions
+
+#### Event Integration
+- Buildings publish events instead of direct method calls
+- TickProcessor subscribes to building events for reactive processing
+- Loose coupling enables better testability and extensibility
+
+### Configuration Management
+
+Externalized, validated configuration system:
+
+#### Configuration System (`src/config/`)
+- **buildings/**: Modular building configurations by category
+- **ConfigValidator.ts**: Runtime validation with detailed error reporting
+- **ConfigManager.ts**: Global configuration coordination
+- **ConfigService.ts**: Runtime configuration management with hot-reloading
+
+### Plugin Architecture
+
+Extensible system through plugin support:
+
+#### Plugin System (`src/plugins/`)
+- **IPlugin**: Plugin interface for lifecycle management
+- **PluginManager**: Plugin loading, unloading, and management
+- **BuildingPlugin**: Example plugin for custom buildings
+
+### Error Handling and Logging
+
+Comprehensive error management:
+
+#### Error Handling (`src/utils/`)
+- **Logger.ts**: Structured logging with context and levels
+- **ErrorHandler.ts**: Centralized error handling with async/sync wrappers
+
+### Service Integration
+
+Global service access through ServiceLocator:
+
+#### Service Locator (`src/services/`)
+- **ServiceLocator.ts**: Global service registry and access
+- **Service Integration Tests**: End-to-end service verification
+
+### Key Architectural Improvements
+
+#### Testability
+- All services implement interfaces for easy mocking
+- Dependency injection enables isolated unit testing
+- Event-driven design allows testing of component interactions
+
+#### Maintainability
+- Clean separation of concerns through service boundaries
+- Interface-based design for loose coupling
+- Comprehensive documentation and API references
+
+#### Extensibility
+- Plugin system for custom functionality
+- Event system for reactive extensions
+- Configuration system for runtime customization
+
+#### Reliability
+- Structured error handling and logging
+- Configuration validation prevents runtime errors
+- Service lifecycle management ensures proper cleanup
+
+### Migration Path
+
+The modernized architecture maintains backward compatibility while providing a migration path:
+
+1. **Phase 1**: Core services implemented alongside existing code
+2. **Phase 2**: Gradual migration of components to use new services
+3. **Phase 3**: Complete adoption with plugin and configuration systems
+
+### Performance Characteristics
+
+- **Memory**: Reduced object creation through persistent instances
+- **CPU**: Efficient event-driven processing
+- **I/O**: Async configuration loading with caching
+- **Maintainability**: Interface-based design reduces coupling
+
+This modernized architecture transforms the codebase into a maintainable, extensible, and testable system suitable for long-term development and community contributions.

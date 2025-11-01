@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { TickProcessor } from '../../simulation/TickProcessor';
 import { BuildingRegistry } from '../../managers/BuildingRegistry';
 import { GameStateManager } from '../../managers/GameStateManager';
+import { EventBus } from '../../events/EventBus';
 import { PerformanceMonitor } from '../../utils/PerformanceMonitor';
 import { OptimizationManager } from '../../config/optimization.config';
 import type { Node, Edge } from '@xyflow/react';
@@ -30,7 +31,8 @@ describe('TickProcessor Performance Tests', () => {
 
   beforeEach(() => {
     gameStateManager = new GameStateManager();
-    buildingRegistry = new BuildingRegistry(gameStateManager);
+    const eventBus = new EventBus();
+    buildingRegistry = new BuildingRegistry(gameStateManager, eventBus);
     performanceMonitor = new PerformanceMonitor();
     edges = [];
     nodes = [];
