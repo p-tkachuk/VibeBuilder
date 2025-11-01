@@ -1,5 +1,5 @@
 import React from 'react';
-import { SaveLoadService } from '../services/SaveLoadService';
+import { SaveLoadService } from '../../services/SaveLoadService';
 import styles from './LoadMenu.module.css';
 
 interface LoadMenuProps {
@@ -11,7 +11,6 @@ interface LoadMenuProps {
  * Load menu component showing available save slots for loading
  */
 export const LoadMenu: React.FC<LoadMenuProps> = ({ onLoad, onBack }) => {
-  const saveSlots = SaveLoadService.getSaveSlots();
 
   const handleLoad = (slotIndex: number) => {
     if (SaveLoadService.hasSaveInSlot(slotIndex)) {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { GAME_CONFIG } from '../config/game.config';
+import { GAME_CONFIG } from '../../config/game.config';
 
 /**
  * MapBorderNode component - displays a "do not cross" tape border as a ReactFlow node
@@ -80,3 +80,5 @@ export const MapBorderNode: React.FC = () => {
         </div>
     );
 };
+
+

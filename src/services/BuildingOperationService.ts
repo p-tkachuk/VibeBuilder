@@ -2,7 +2,7 @@ import type { Node, Edge } from '@xyflow/react';
 import { BuildingType, BuildingSpecialty, BUILDING_CONFIGS } from '../types/buildings';
 import { ResourceType } from '../types/terrain';
 import type { ResourceField } from '../types/terrain';
-import type { BuildingNodeData } from '../components/BuildingNode';
+import type { BuildingNodeData } from '../components/BuildingNode/BuildingNode';
 import { isPositionInResourceField } from '../utils/position.utils';
 import { getBuildingCenter } from '../utils/position.utils';
 

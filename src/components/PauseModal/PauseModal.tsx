@@ -19,3 +19,5 @@ export const PauseModal: React.FC<PauseModalProps> = ({ onResume }) => {
     </div>
   );
 };
+
+

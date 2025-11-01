@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { BuildingType, BUILDING_CONFIGS } from '../types/buildings';
-import { ResourceInventoryService } from '../services/ResourceInventoryService';
+import { BuildingType, BUILDING_CONFIGS } from '../../types/buildings';
+import { ResourceInventoryService } from '../../services/ResourceInventoryService';
 import type { Node } from '@xyflow/react';
 import styles from './BuildingMenu.module.css';
 
@@ -175,3 +175,5 @@ export const BuildingMenu: React.FC<BuildingMenuProps> = ({
     </div>
   );
 };
+
+

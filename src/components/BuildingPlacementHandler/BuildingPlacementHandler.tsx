@@ -1,14 +1,14 @@
 import React, { useState, useCallback } from 'react';
 import { useReactFlow, type Node } from '@xyflow/react';
-import { BuildingType, BUILDING_CONFIGS } from '../types/buildings';
-import { GAME_CONFIG } from '../config/game.config';
-import { BuildingPlacementService } from '../services/BuildingPlacementService';
-import { useGhostPreview } from '../hooks/useGhostPreview';
-import { GhostPreview } from './GhostPreview';
-import { snapToGrid } from '../utils/position.utils';
-import type { Position } from '../utils/position.utils';
-import type { ResourceField } from '../types/terrain';
-import { ResourceInventoryService } from '../services/ResourceInventoryService';
+import { BuildingType, BUILDING_CONFIGS } from '../../types/buildings';
+import { GAME_CONFIG } from '../../config/game.config';
+import { BuildingPlacementService } from '../../services/BuildingPlacementService';
+import { useGhostPreview } from '../../hooks/useGhostPreview';
+import { GhostPreview } from '../GhostPreview/GhostPreview';
+import { snapToGrid } from '../../utils/position.utils';
+import type { Position } from '../../utils/position.utils';
+import type { ResourceField } from '../../types/terrain';
+import { ResourceInventoryService } from '../../services/ResourceInventoryService';
 
 /**
  * BuildingPlacementHandler component - handles building placement interactions
@@ -130,3 +130,5 @@ export const BuildingPlacementHandler: React.FC<BuildingPlacementHandlerProps> =
         </>
     );
 };
+
+

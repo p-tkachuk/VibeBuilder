@@ -1,5 +1,5 @@
 import React from 'react';
-import { ResourceType, RESOURCE_PATTERNS, RESOURCE_COLORS } from '../types/terrain';
+import { ResourceType, RESOURCE_PATTERNS, RESOURCE_COLORS } from '../../types/terrain';
 
 interface ResourcePanelProps {
     resources: Record<string, number>;
@@ -45,3 +45,5 @@ export const ResourcePanel: React.FC<ResourcePanelProps> = ({ resources }) => {
         </div>
     );
 };
+
+

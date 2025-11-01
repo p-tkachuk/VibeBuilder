@@ -1,7 +1,7 @@
 import React from 'react';
-import { BuildingNode } from './BuildingNode';
-import { BuildingType, BUILDING_CONFIGS } from '../types/buildings';
-import type { GhostPreview as GhostPreviewData } from '../hooks/useGhostPreview';
+import { BuildingNode } from '../BuildingNode/BuildingNode';
+import { BuildingType, BUILDING_CONFIGS } from '../../types/buildings';
+import type { GhostPreview as GhostPreviewData } from '../../hooks/useGhostPreview';
 
 /**
  * GhostPreview component - displays a preview of the building being placed

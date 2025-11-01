@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef, useEffect } from 'react';
 import { useReactFlow } from '@xyflow/react';
-import { GAME_CONFIG } from '../config/game.config';
-import type { ResourceField } from '../types/terrain';
+import { GAME_CONFIG } from '../../config/game.config';
+import type { ResourceField } from '../../types/terrain';
 
 /**
  * Minimap component - displays a small overview of the entire map
@@ -160,3 +160,5 @@ export const Minimap: React.FC<MinimapProps> = React.memo(({ resourceFields }) =
     </div>
   );
 });
+
+

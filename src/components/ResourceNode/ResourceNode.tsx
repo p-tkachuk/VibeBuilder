@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { ResourceType, RESOURCE_COLORS, RESOURCE_PATTERNS, isOreType } from '../types/terrain';
+import { ResourceType, RESOURCE_COLORS, RESOURCE_PATTERNS, isOreType } from '../../types/terrain';
 import styles from './ResourceNode.module.css';
-import { OPACITY } from '../constants/game.constants';
+import { OPACITY } from '../../constants/game.constants';
 
 interface ResourceNodeData {
   resourceType: ResourceType;
@@ -48,3 +48,5 @@ export const ResourceNode: React.FC<ResourceNodeProps> = ({ data }) => {
     </div>
   );
 };
+
+

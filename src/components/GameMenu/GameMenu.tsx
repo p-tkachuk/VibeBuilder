@@ -32,3 +32,5 @@ export const GameMenu: React.FC<GameMenuProps> = ({ onSave, onLoad, onClose }) =
     </div>
   );
 };
+
+
