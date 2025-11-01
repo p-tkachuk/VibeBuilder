@@ -22,7 +22,7 @@ export interface GameState {
 }
 
 export interface StateChange {
-  type: 'building_created' | 'building_destroyed' | 'inventory_updated' | 'connections_changed';
+  type: 'building_created' | 'building_destroyed' | 'inventory_updated' | 'connections_changed' | 'batch_update';
   buildingId?: string;
-  changes: Partial<BuildingState>;
+  changes: Partial<BuildingState> | Array<{ buildingId: string; changes: Partial<BuildingState> }>;
 }

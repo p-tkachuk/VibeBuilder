@@ -2,51 +2,143 @@ import type { Node, Edge } from '@xyflow/react';
 import { BuildingSpecialty } from '../types/buildings';
 import { BaseBuilding } from './buildings/BaseBuilding';
 import { BuildingRegistry } from '../managers/BuildingRegistry';
+import { ConnectionManager } from '../managers/ConnectionManager';
+import { ParallelProcessor } from '../utils/ParallelProcessor';
+import { PerformanceMonitor } from '../utils/PerformanceMonitor';
+import { OptimizationManager } from '../config/optimization.config';
 
 export class TickProcessor {
-    static processTick(buildingRegistry: BuildingRegistry, edges: Edge[], nodes: Node[]): void {
+    private static connectionManager = new ConnectionManager();
+    private static performanceMonitor = new PerformanceMonitor();
+
+    static async processTick(buildingRegistry: BuildingRegistry, edges: Edge[], nodes: Node[]): Promise<void> {
+        // Ensure BuildingRegistry has access to ConnectionManager for cleanup
+        buildingRegistry.setConnectionManager(this.connectionManager);
+
+        const endTimer = OptimizationManager.isEnabled('ENABLE_PERFORMANCE_MONITORING')
+            ? this.performanceMonitor.startTimer('tick_processing')
+            : () => {};
+
         const buildings = buildingRegistry.getAll();
 
-        // Update buildings with current edges and nodes for connection detection
+        // Ensure all buildings have current edge/node references for supplier calculations
         buildings.forEach(building => {
-            // Update the building's edge/node references (we'll need to add methods for this)
             building.updateConnections(edges, nodes);
         });
 
-        // Establish supplier relationships
-        const buildingsMap: Record<string, BaseBuilding> = {};
+        // Only update connection cache if edges have changed (if optimization enabled)
+        const connectionsChanged = OptimizationManager.isEnabled('ENABLE_CONNECTION_CHANGE_DETECTION')
+            ? this.connectionManager.updateConnectionsIfChanged(edges, nodes, buildings)
+            : true; // Always update if optimization disabled
+
+        // Update cached connections only if changed
+        if (connectionsChanged) {
+            buildings.forEach(building => {
+                const connections = this.connectionManager.getConnections(building.id);
+                if (connections) {
+                    building.updateConnectionsFromCache(connections);
+                    // allEdges is already set above, so supplier calculations will work
+                }
+            });
+        }
+
+        // Establish supplier relationships using cached suppliers
         buildings.forEach(building => {
-            buildingsMap[building.id] = building;
             building.resetEnergyShortage();
         });
 
-        Object.values(buildings).forEach(building => {
+        // Update supplier cache only if connections changed (if optimization enabled)
+        if (connectionsChanged && OptimizationManager.isEnabled('ENABLE_SUPPLIER_CACHE')) {
+            buildingRegistry.updateSupplierCache(edges);
+        }
+
+        // Set suppliers - both cached and direct versions need all buildings for proper energy supplier setup
+        const buildingsMap: Record<string, BaseBuilding> = {};
+        buildings.forEach(building => {
+            buildingsMap[building.id] = building;
+        });
+        buildings.forEach(building => {
             building.setSuppliers(buildingsMap);
         });
+
+        // Collect state updates for batch processing
+        const stateUpdates: Array<{ buildingId: string; changes: Partial<any> }> = [];
 
         // Process in separate phases: produce, pull, consume-produce
         buildings.filter(b => b.specialty === BuildingSpecialty.POWER_PLANT).forEach(building => {
             building.phasePull();
-            building.getUpdatedNode(); // Sync state after phase
+            // Collect state changes instead of immediate sync
+            stateUpdates.push({
+                buildingId: building.id,
+                changes: {
+                    inventory: building.inventory.getAll(),
+                    energyShortage: building.energyShortage
+                }
+            });
         });
         buildings.filter(b => b.specialty === BuildingSpecialty.POWER_PLANT).forEach(building => {
             building.phaseConsumeAndProduce();
-            building.getUpdatedNode(); // Sync state after phase
+            // Collect state changes instead of immediate sync
+            stateUpdates.push({
+                buildingId: building.id,
+                changes: {
+                    inventory: building.inventory.getAll(),
+                    energyShortage: building.energyShortage
+                }
+            });
         });
 
-        buildings.filter(b => b.specialty === BuildingSpecialty.MINER).forEach(building => {
-            building.phaseProduce();
-            building.getUpdatedNode(); // Sync state after phase
-        });
+        // Process miners in parallel for better performance with large building counts
+        const miners = buildings.filter(b => b.specialty === BuildingSpecialty.MINER);
+        await ParallelProcessor.processInParallelSync(
+            miners,
+            async (building) => {
+                building.phaseProduce();
+                // Collect state changes instead of immediate sync
+                stateUpdates.push({
+                    buildingId: building.id,
+                    changes: {
+                        inventory: building.inventory.getAll(),
+                        energyShortage: building.energyShortage
+                    }
+                });
+            }
+        );
         buildings.filter(b => b.specialty !== BuildingSpecialty.POWER_PLANT).forEach(building => {
             building.phasePull();
-            building.getUpdatedNode(); // Sync state after phase
+            // Collect state changes instead of immediate sync
+            stateUpdates.push({
+                buildingId: building.id,
+                changes: {
+                    inventory: building.inventory.getAll(),
+                    energyShortage: building.energyShortage
+                }
+            });
         });
         buildings.filter(b => b.specialty === BuildingSpecialty.FACTORY || b.specialty === BuildingSpecialty.UTILITY).forEach(building => {
             building.phaseConsumeAndProduce();
-            building.getUpdatedNode(); // Sync state after phase
+            // Collect state changes instead of immediate sync
+            stateUpdates.push({
+                buildingId: building.id,
+                changes: {
+                    inventory: building.inventory.getAll(),
+                    energyShortage: building.energyShortage
+                }
+            });
         });
 
-        // State is updated through registry - no return value needed
+        // Batch update all state changes at the end
+        if (stateUpdates.length > 0) {
+            buildingRegistry.batchUpdateState(stateUpdates);
+        }
+
+        // Record performance metrics
+        endTimer();
+        this.performanceMonitor.recordMemoryUsage('tick_end');
+
+        // Periodic memory optimization
+        if (OptimizationManager.isEnabled('ENABLE_MEMORY_OPTIMIZATION')) {
+            buildingRegistry.optimizeMemory();
+        }
     }
 }

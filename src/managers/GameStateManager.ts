@@ -38,6 +38,28 @@ export class GameStateManager {
     });
   }
 
+  batchUpdate(updates: Array<{ buildingId: string; changes: Partial<BuildingState> }>): void {
+    const newBuildings = { ...this.state.buildings };
+
+    updates.forEach(({ buildingId, changes }) => {
+      const currentBuilding = newBuildings[buildingId];
+      if (currentBuilding) {
+        newBuildings[buildingId] = { ...currentBuilding, ...changes };
+      }
+    });
+
+    this.state = {
+      ...this.state,
+      buildings: newBuildings
+    };
+
+    // Single notification for batch update
+    this.notifyListeners({
+      type: 'batch_update',
+      changes: updates
+    });
+  }
+
   addBuilding(buildingState: BuildingState): void {
     this.state = {
       ...this.state,

@@ -11,6 +11,7 @@ export interface InventoryManager {
     getTotal(): number;
     getCapacity(): number;
     has(resource: string, amount: number): boolean;
+    getAll(): Record<string, number>;
 }
 
 export class SimpleInventory implements InventoryManager {
@@ -52,6 +53,10 @@ export class SimpleInventory implements InventoryManager {
 
     has(resource: string, amount: number): boolean {
         return (this.inventory[resource] || 0) >= amount;
+    }
+
+    getAll(): Record<string, number> {
+        return { ...this.inventory };
     }
 }
 
@@ -213,6 +218,35 @@ export abstract class BaseBuilding {
         this.edges = edges.filter(edge => edge.source === this.id || edge.target === this.id);
         this.allEdges = edges;
         this.allNodes = nodes;
+    }
+
+    // Update connections from cached connection data
+    updateConnectionsFromCache(connectionData: { inputs: string[], outputs: string[], energyInputs: string[] }): void {
+        // Update edges based on cached connection data
+        this.edges = [
+            ...connectionData.inputs.map((inputId, index) => ({
+                id: `input-${inputId}-${this.id}-${index}`,
+                source: inputId,
+                target: this.id,
+                targetHandle: 'input' as const
+            })),
+            ...connectionData.outputs.map((outputId, index) => ({
+                id: `output-${this.id}-${outputId}-${index}`,
+                source: this.id,
+                target: outputId
+            })),
+            ...connectionData.energyInputs.map((energyId, index) => ({
+                id: `energy-${energyId}-${this.id}-${index}`,
+                source: energyId,
+                target: this.id,
+                targetHandle: 'energy-input' as const
+            }))
+        ];
+
+        // For cached connections, we need to ensure allEdges and allNodes are available
+        // Since we're caching connections, we assume the global edge/node state hasn't changed
+        // But we need these for supplier calculations, so we'll use the current global state
+        // This is a limitation of the current caching approach - we still need global state for supplier lookup
     }
 
     // Get current position from game state
