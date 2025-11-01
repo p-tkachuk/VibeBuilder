@@ -1,13 +1,17 @@
 /* BuildingMenu CSS Module */
 
 .container {
-    background-color: rgba(0, 0, 0, 0.8);
-    border-radius: 8px;
+    background-color: rgba(0, 0, 0, 0.9);
+    border-radius: 12px;
     padding: 16px;
     display: flex;
     flex-direction: column;
     gap: 8px;
     min-width: 200px;
+    max-height: 80vh;
+    overflow-y: auto;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
 .title {
@@ -94,4 +98,23 @@
 
 .subButton:hover:not(.selected) {
     background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Custom scrollbar styling for game aesthetic */
+.container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+.container::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
 }
