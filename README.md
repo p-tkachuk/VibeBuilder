@@ -1,4 +1,4 @@
-# Atata
+# VibeBuilder
 
 A factory automation game built with React, TypeScript, and ReactFlow. Build and manage complex production chains, mine resources, process materials, and optimize your industrial empire.
 
