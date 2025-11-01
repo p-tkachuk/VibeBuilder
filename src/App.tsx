@@ -292,7 +292,7 @@ export default function App() {
           // Update the building state with the correct position
           gameStateManager.updateBuilding(node.id, {
             position: node.position,
-            inventory: node.data.inventory || ({} as Record<string, number>)
+            inventory: node.data.inventory || Object.create(null)
           });
         }
       }
@@ -414,7 +414,7 @@ export default function App() {
         >
           <ViewportInitializer />
           <TerrainOverlay />
-          <Minimap resourceFields={resourceFields} />
+          <Minimap resourceFields={resourceFields} buildings={gameStateManager.getState().buildings} />
           <BuildingPlacementHandler
             selectedBuildingType={selectedBuildingType}
             onBuildingPlaced={handleBuildingPlaced}

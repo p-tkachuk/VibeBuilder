@@ -1,18 +1,21 @@
 import React, { useCallback, useMemo, useRef, useEffect } from 'react';
 import { useReactFlow } from '@xyflow/react';
 import { GAME_CONFIG } from '../../config/game.config';
+import { BUILDING_CONFIGS } from '../../config/buildings';
 import type { ResourceField } from '../../types/terrain';
+import type { BuildingState } from '../../types/game-state';
 
 /**
  * Minimap component - displays a small overview of the entire map
- * Shows resource fields and current camera position, allows navigation by clicking
+ * Shows resource fields, buildings, and current camera position, allows navigation by clicking
  * Optimized for real-time updates with minimal lag
  */
 interface MinimapProps {
   resourceFields: ResourceField[];
+  buildings: Record<string, BuildingState>;
 }
 
-export const Minimap: React.FC<MinimapProps> = React.memo(({ resourceFields }) => {
+export const Minimap: React.FC<MinimapProps> = React.memo(({ resourceFields, buildings }) => {
   const { getViewport, setViewport } = useReactFlow();
 
   const minimapSize = 200; // Size of the minimap in pixels
@@ -131,6 +134,29 @@ export const Minimap: React.FC<MinimapProps> = React.memo(({ resourceFields }) =
         />
       ))}
 
+      {/* Buildings */}
+      {Object.values(buildings).map((building) => {
+        const buildingConfig = BUILDING_CONFIGS[building.type];
+        const buildingSize = 4; // Small fixed size for buildings on minimap
+
+        return (
+          <div
+            key={building.id}
+            style={{
+              position: 'absolute',
+              left: `${building.position.x * scale - buildingSize / 2}px`,
+              top: `${building.position.y * scale - buildingSize / 2}px`,
+              width: `${buildingSize}px`,
+              height: `${buildingSize}px`,
+              backgroundColor: buildingConfig?.color || '#FFFFFF',
+              border: '1px solid rgba(255,255,255,0.8)',
+              borderRadius: '1px',
+              pointerEvents: 'none',
+            }}
+          />
+        );
+      })}
+
       {/* Current viewport indicator */}
       <div
         style={{
@@ -160,5 +186,3 @@ export const Minimap: React.FC<MinimapProps> = React.memo(({ resourceFields }) =
     </div>
   );
 });
-
-
