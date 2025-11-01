@@ -12,6 +12,7 @@ import { Minimap } from './components/Minimap';
 import { GameMenu } from './components/GameMenu';
 import { SaveMenu } from './components/SaveMenu';
 import { LoadMenu } from './components/LoadMenu';
+import { PauseModal } from './components/PauseModal';
 import { BuildingType } from './types/buildings';
 import { Toast } from './components/Toast';
 import { useResourceFields } from './hooks/useResourceFields';
@@ -79,6 +80,7 @@ export default function App() {
   const [inventoryChangeCount, setInventoryChangeCount] = useState(0);
   const [menuState, setMenuState] = useState<MenuState>('closed');
   const [loadedResourceFields, setLoadedResourceFields] = useState<any[] | undefined>(undefined);
+  const [isPaused, setIsPaused] = useState(false);
 
   // IMPORTANT: React hooks must be called at the component level, never inside callbacks or conditional blocks
   // This follows the Rules of Hooks - hooks can only be called at the top level of React components
@@ -107,7 +109,7 @@ export default function App() {
   }, [setNodes, setEdges, resourceInventory]);
 
   // Handle keyboard actions
-  useKeyboardActions(selectedBuildingType, clearSelection, handleDeleteSelected, menuState, setMenuState);
+  useKeyboardActions(selectedBuildingType, clearSelection, handleDeleteSelected, menuState, setMenuState, isPaused, setIsPaused);
 
   const showToast = useCallback((message: string) => {
     setToastMessage(message);
@@ -140,11 +142,13 @@ export default function App() {
 
   // Building operations ticker
   useEffect(() => {
-    const interval = setInterval(() => {
-      setNodes((prevNodes) => TickProcessor.processTick(prevNodes, edges, resourceFields, resourceInventory));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [edges, resourceFields, resourceInventory]);
+    if (!isPaused) {
+      const interval = setInterval(() => {
+        setNodes((prevNodes) => TickProcessor.processTick(prevNodes, edges, resourceFields, resourceInventory));
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [edges, resourceFields, resourceInventory, isPaused]);
 
   const onNodesChangeWrapper = useCallback(
     (changes: NodeChange[]) => {
@@ -252,7 +256,7 @@ export default function App() {
 
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
-      <div style={{ position: 'absolute', top: '20px', left: '20px', right: '20px', zIndex: 10, display: 'flex', gap: '20px', alignItems: 'flex-start', pointerEvents: 'none' }}>
+      <div style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 10, display: 'flex', gap: '20px', alignItems: 'flex-start', pointerEvents: 'none' }}>
         <div style={{ pointerEvents: 'auto' }}>
           <BuildingMenu
             onBuildingSelect={handleBuildingSelect}
@@ -263,6 +267,35 @@ export default function App() {
         </div>
         <div style={{ pointerEvents: 'auto' }}>
           <ResourcePanel resources={totalResources} storageCapacity={resourceInventory.getStorageCapacity()} />
+        </div>
+      </div>
+      <div style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 10, pointerEvents: 'none' }}>
+        <div style={{ pointerEvents: 'auto' }}>
+          <button
+            onClick={() => setIsPaused(true)}
+            style={{
+              padding: '0.5rem 1rem',
+              background: 'linear-gradient(135deg, #3498db, #2980b9)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '1rem',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = 'linear-gradient(135deg, #2980b9, #21618c)';
+              e.currentTarget.style.transform = 'translateY(-1px)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = 'linear-gradient(135deg, #3498db, #2980b9)';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            ⏸️ PAUSE
+          </button>
         </div>
       </div>
       <div style={{ position: 'relative', height: '100vh' }}>
@@ -323,7 +356,10 @@ export default function App() {
         <GameMenu
           onSave={() => setMenuState('save')}
           onLoad={() => setMenuState('load')}
-          onClose={() => setMenuState('closed')}
+          onClose={() => {
+            setMenuState('closed');
+            setIsPaused(false);
+          }}
         />
       )}
       {menuState === 'save' && (
@@ -337,6 +373,11 @@ export default function App() {
           onLoad={handleLoadGame}
           onBack={() => setMenuState('main')}
         />
+      )}
+
+      {/* Pause Modal */}
+      {isPaused && menuState === 'closed' && (
+        <PauseModal onResume={() => setIsPaused(false)} />
       )}
     </div>
   );

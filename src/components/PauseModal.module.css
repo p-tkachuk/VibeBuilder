@@ -1,0 +1,38 @@
+.pauseModalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.pauseModal {
+  background: linear-gradient(135deg, #2c3e50, #34495e);
+  border: 2px solid #ecf0f1;
+  border-radius: 12px;
+  padding: 2rem;
+  min-width: 200px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.pauseModal h2 {
+  color: #ecf0f1;
+  margin: 0 0 1rem 0;
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.2rem;
+}
+
+.pauseHint {
+  color: #bdc3c7;
+  font-size: 0.9rem;
+  margin: 0;
+  font-style: italic;
+}

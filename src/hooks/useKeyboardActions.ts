@@ -5,14 +5,16 @@ export type MenuState = 'closed' | 'main' | 'save' | 'load';
 
 /**
  * Custom hook for keyboard actions
- * Handles ESC (deselect/menu) and Delete (remove selected buildings) actions
+ * Handles ESC (deselect/menu/pause) and Delete (remove selected buildings) actions
  */
 export const useKeyboardActions = (
     selectedBuildingType: BuildingType | null,
     clearSelection: () => void,
     deleteSelectedNodes?: () => void,
     menuState?: MenuState,
-    setMenuState?: (state: MenuState) => void
+    setMenuState?: (state: MenuState) => void,
+    isPaused?: boolean,
+    setIsPaused?: (paused: boolean) => void
 ) => {
     const escPressedRef = useRef(false);
 
@@ -22,9 +24,18 @@ export const useKeyboardActions = (
             if (event.key === 'Escape') {
                 event.preventDefault();
 
-                // If menu is open, close it
+                // If pause modal is open, close it
+                if (isPaused && menuState === 'closed' && setIsPaused) {
+                    setIsPaused(false);
+                    return;
+                }
+
+                // If menu is open, close it and unpause
                 if (menuState && menuState !== 'closed' && setMenuState) {
                     setMenuState('closed');
+                    if (setIsPaused) {
+                        setIsPaused(false);
+                    }
                     return;
                 }
 
@@ -39,16 +50,19 @@ export const useKeyboardActions = (
                     return;
                 }
 
-                // If nothing is selected and menu is closed, open menu
+                // If nothing is selected and menu is closed, open menu and pause
                 if (setMenuState) {
                     setMenuState('main');
+                    if (setIsPaused) {
+                        setIsPaused(true);
+                    }
                 }
             }
         };
 
         document.addEventListener('keydown', handleKeyDown);
         return () => document.removeEventListener('keydown', handleKeyDown);
-    }, [selectedBuildingType, clearSelection, menuState, setMenuState]);
+    }, [selectedBuildingType, clearSelection, menuState, setMenuState, isPaused, setIsPaused]);
 
     // Handle Delete key to remove selected buildings
     useEffect(() => {
