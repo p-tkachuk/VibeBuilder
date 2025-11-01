@@ -44,10 +44,15 @@ export const Minimap: React.FC<MinimapProps> = ({ resourceFields }) => {
     const clickY = event.clientY - rect.top;
 
     // Convert minimap coordinates to world coordinates
-    const worldX = clickX / scale;
-    const worldY = clickY / scale;
+    let worldX = clickX / scale;
+    let worldY = clickY / scale;
 
-    // Center the viewport on the clicked position
+    // Clamp the target position to stay within map boundaries
+    // The center of the camera should not go outside the build area
+    worldX = Math.max(0, Math.min(GAME_CONFIG.mapWidth, worldX));
+    worldY = Math.max(0, Math.min(GAME_CONFIG.mapHeight, worldY));
+
+    // Center the viewport on the clicked (clamped) position
     setViewport({
       x: -worldX * viewport.zoom + window.innerWidth / 2,
       y: -worldY * viewport.zoom + window.innerHeight / 2,

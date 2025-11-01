@@ -156,6 +156,27 @@ export default function App() {
     clearSelection(); // Clear selection after placement
   }, [clearSelection]);
 
+  // Calculate translate extent to restrict camera movement to map boundaries
+  const translateExtent = useMemo(() => {
+    // Allow camera center to stay within map boundaries, but permit some edge visibility
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    // Camera center should stay within [0, mapWidth] and [0, mapHeight]
+    // Allow some padding for smooth UX while keeping center constrained
+    const padding = Math.min(800, viewportWidth, viewportHeight); // Adaptive padding
+
+    const minX = -padding; // Allow slight pan left of origin
+    const minY = -padding; // Allow slight pan up of origin
+    const maxX = GAME_CONFIG.mapWidth + padding; // Allow slight pan right of map
+    const maxY = GAME_CONFIG.mapHeight + padding; // Allow slight pan down of map
+
+    return [
+      [minX, minY],
+      [maxX, maxY],
+    ] as [[number, number], [number, number]];
+  }, []);
+
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
       <div style={{ position: 'absolute', top: '20px', left: '20px', right: '20px', zIndex: 10, display: 'flex', gap: '20px', alignItems: 'flex-start', pointerEvents: 'none' }}>
@@ -178,6 +199,7 @@ export default function App() {
           onNodesChange={onNodesChangeWrapper}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          translateExtent={translateExtent}
           onNodeClick={(_, node) => {
             if (node.type === 'resource' && (node.data.resourceType as string)) {
               const resourceType = node.data.resourceType as string;
