@@ -37,8 +37,8 @@ export interface GameConfig {
 
 export const GAME_CONFIG: GameConfig = {
     // Map dimensions
-    mapWidth: 2000,
-    mapHeight: 2000,
+    mapWidth: 8000,
+    mapHeight: 8000,
 
     // Number of each resource type to generate
     resourceCount: {

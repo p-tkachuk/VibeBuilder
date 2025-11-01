@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { ReactFlow, useNodesState, useEdgesState, addEdge, type Node, type Edge, type NodeChange, type Connection, type NodeTypes } from '@xyflow/react';
+import { ReactFlow, useNodesState, useEdgesState, addEdge, type Node, type Edge, type NodeChange, type Connection, type NodeTypes, useReactFlow } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { BuildingMenu } from './components/BuildingMenu';
 import { BuildingNode } from './components/BuildingNode';
@@ -8,6 +8,7 @@ import { MapBorderNode } from './components/MapBorderNode';
 import { TerrainOverlay } from './components/TerrainOverlay';
 import { BuildingPlacementHandler } from './components/BuildingPlacementHandler';
 import { ResourcePanel } from './components/ResourcePanel';
+import { Minimap } from './components/Minimap';
 import { BuildingType } from './types/buildings';
 import { Toast } from './components/Toast';
 import { useResourceFields } from './hooks/useResourceFields';
@@ -18,6 +19,24 @@ import { GAME_CONFIG } from './config/game.config';
 import { ResourceInventoryService } from './services/ResourceInventoryService';
 import { NodeValidationService } from './services/NodeValidationService';
 import { TickProcessor } from './simulation/TickProcessor';
+
+/**
+ * ViewportInitializer component - sets initial camera position to map center
+ */
+const ViewportInitializer: React.FC = () => {
+  const { setViewport } = useReactFlow();
+
+  useEffect(() => {
+    // Center the viewport on the map center
+    setViewport({
+      x: -GAME_CONFIG.mapWidth / 2 + window.innerWidth / 2,
+      y: -GAME_CONFIG.mapHeight / 2 + window.innerHeight / 2,
+      zoom: 1,
+    });
+  }, [setViewport]);
+
+  return null;
+};
 
 const initialNodes: Node[] = [
   {
@@ -188,7 +207,9 @@ export default function App() {
           }}
           style={{ backgroundColor: COLORS.TERRAIN_PRIMARY }}
         >
+          <ViewportInitializer />
           <TerrainOverlay />
+          <Minimap resourceFields={resourceFields} />
           <BuildingPlacementHandler
             selectedBuildingType={selectedBuildingType}
             onBuildingPlaced={handleBuildingPlaced}
