@@ -1,17 +1,26 @@
 import type { Node, Edge } from '@xyflow/react';
-import { getBuildingCenter } from '../../utils/position.utils';
 import { isPositionInResourceField } from '../../utils/position.utils';
 import { BaseBuilding } from './BaseBuilding';
 import { BUILDING_CONFIGS } from '../../types/buildings';
 import { ResourceType } from '../../types/terrain';
 import type { ResourceField } from '../../types/terrain';
+import { GameStateManager } from '../../managers/GameStateManager';
+import { BuildingRegistry } from '../../managers/BuildingRegistry';
 
 export class Miner extends BaseBuilding {
     private resourceFieldType: string;
     private resourceFields: ResourceField[];
 
-    constructor(node: Node, edges: Edge[], allNodes: Node[], allEdges: Edge[], resourceFields?: ResourceField[]) {
-        super(node, edges, allNodes, allEdges);
+    constructor(
+        node: Node,
+        edges: Edge[],
+        allNodes: Node[],
+        allEdges: Edge[],
+        gameStateManager: GameStateManager,
+        buildingRegistry: BuildingRegistry,
+        resourceFields?: ResourceField[]
+    ) {
+        super(node, edges, allNodes, allEdges, gameStateManager, buildingRegistry);
 
         // Map output resource string
         const outputKeys = Object.keys(BUILDING_CONFIGS[this.type].outputs as Record<string, any>);
@@ -40,8 +49,8 @@ export class Miner extends BaseBuilding {
         }
 
         // Check if placed over resource field
-        const center = getBuildingCenter(this.node.position);
-        if (!isPositionInResourceField(center, this.resourceFields, this.resourceFieldType as ResourceType)) return;
+        const currentPosition = this.getCurrentPosition();
+        if (!isPositionInResourceField(currentPosition, this.resourceFields, this.resourceFieldType as ResourceType)) return;
 
         // Check if has connected consumer
         if (!this.hasConnectedOutput()) return;

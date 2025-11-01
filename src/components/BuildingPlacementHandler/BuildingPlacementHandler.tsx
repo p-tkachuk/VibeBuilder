@@ -17,7 +17,7 @@ import { ResourceInventoryService } from '../../services/ResourceInventoryServic
  */
 interface BuildingPlacementHandlerProps {
     selectedBuildingType: BuildingType | null;
-    onBuildingPlaced: (node: Node) => void;
+    onBuildingPlaced: (node: Node) => void | Promise<void>;
     onNodesUpdate: (nodes: Node[]) => void;
     resourceFields: ResourceField[];
     existingNodes: Node[];
@@ -130,5 +130,3 @@ export const BuildingPlacementHandler: React.FC<BuildingPlacementHandlerProps> =
         </>
     );
 };
-
-

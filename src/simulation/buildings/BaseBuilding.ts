@@ -1,6 +1,8 @@
 import type { Node, Edge } from '@xyflow/react';
 import { BuildingType, BuildingSpecialty, BUILDING_CONFIGS } from '../../types/buildings';
 import { ResourceType } from '../../types/terrain';
+import { GameStateManager } from '../../managers/GameStateManager';
+import { BuildingRegistry } from '../../managers/BuildingRegistry';
 
 export interface InventoryManager {
     add(resource: string, amount: number): boolean;
@@ -54,10 +56,13 @@ export class SimpleInventory implements InventoryManager {
 }
 
 export abstract class BaseBuilding {
-    protected id: string;
-    protected type: BuildingType;
+    protected gameStateManager: GameStateManager;
+    protected buildingRegistry: BuildingRegistry;
+
+    public id: string;
+    public type: BuildingType;
     public specialty: BuildingSpecialty;
-    protected inventory: InventoryManager;
+    public inventory: InventoryManager;
     protected node: Node;
     protected edges: Edge[];
     protected allNodes: Node[];
@@ -65,9 +70,18 @@ export abstract class BaseBuilding {
 
     protected suppliers: BaseBuilding[];
     protected energySuppliers: BaseBuilding[];
-    protected energyShortage: boolean = false;
+    public energyShortage: boolean = false;
 
-    constructor(node: Node, edges: Edge[], allNodes: Node[], allEdges: Edge[]) {
+    constructor(
+        node: Node,
+        edges: Edge[],
+        allNodes: Node[],
+        allEdges: Edge[],
+        gameStateManager: GameStateManager,
+        buildingRegistry: BuildingRegistry
+    ) {
+        this.gameStateManager = gameStateManager;
+        this.buildingRegistry = buildingRegistry;
         this.node = node;
         this.edges = edges;
         this.allNodes = allNodes;
@@ -189,21 +203,21 @@ export abstract class BaseBuilding {
         // Default: do nothing (storage needs no consume/produce)
     }
 
-    getUpdatedNode(): Node {
-        const updatedInventory: Record<string, number> = {};
-        // Copy all resources
-        for (const res of ['iron-ore', 'coal', 'stone', 'copper-ore', ResourceType.IRON_PLATE, ResourceType.COPPER_PLATE, ResourceType.STEEL_PLATE, ResourceType.IRON_GEAR, ResourceType.STEEL_GEAR/*, ResourceType.ENERGY*/]) {
-            const amt = this.inventory.get(res);
-            if (amt > 0) updatedInventory[res] = amt;
-        }
+    getUpdatedNode(): void {
+        // Instead of returning a node, sync state changes
+        this.buildingRegistry.updateBuildingState(this.id);
+    }
 
-        return {
-            ...this.node,
-            data: {
-                ...this.node.data,
-                inventory: updatedInventory,
-                energyShortage: this.energyShortage
-            }
-        };
+    // Update connection data with current edges and nodes
+    updateConnections(edges: Edge[], nodes: Node[]): void {
+        this.edges = edges.filter(edge => edge.source === this.id || edge.target === this.id);
+        this.allEdges = edges;
+        this.allNodes = nodes;
+    }
+
+    // Get current position from game state
+    getCurrentPosition(): { x: number; y: number } {
+        const buildingState = this.gameStateManager.getState().buildings[this.id];
+        return buildingState ? buildingState.position : this.node.position;
     }
 }

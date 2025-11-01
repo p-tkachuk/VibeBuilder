@@ -2,12 +2,22 @@ import type { Node, Edge } from '@xyflow/react';
 import { BaseBuilding } from './BaseBuilding';
 import { BUILDING_CONFIGS } from '../../types/buildings';
 import { ResourceInventoryService } from '../../services/ResourceInventoryService';
+import { GameStateManager } from '../../managers/GameStateManager';
+import { BuildingRegistry } from '../../managers/BuildingRegistry';
 
 export class PowerPlant extends BaseBuilding {
     private resourceInventory?: ResourceInventoryService;
 
-    constructor(node: Node, edges: Edge[], allNodes: Node[], allEdges: Edge[], resourceInventory?: ResourceInventoryService) {
-        super(node, edges, allNodes, allEdges);
+    constructor(
+        node: Node,
+        edges: Edge[],
+        allNodes: Node[],
+        allEdges: Edge[],
+        gameStateManager: GameStateManager,
+        buildingRegistry: BuildingRegistry,
+        resourceInventory?: ResourceInventoryService
+    ) {
+        super(node, edges, allNodes, allEdges, gameStateManager, buildingRegistry);
         this.resourceInventory = resourceInventory;
     }
 

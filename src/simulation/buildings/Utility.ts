@@ -1,8 +1,21 @@
+import type { Node, Edge } from '@xyflow/react';
 import { BaseBuilding } from './BaseBuilding';
 import { BUILDING_CONFIGS } from '../../types/buildings';
 import { ResourceType } from '../../types/terrain';
+import { GameStateManager } from '../../managers/GameStateManager';
+import { BuildingRegistry } from '../../managers/BuildingRegistry';
 
 export class Utility extends BaseBuilding {
+    constructor(
+        node: Node,
+        edges: Edge[],
+        allNodes: Node[],
+        allEdges: Edge[],
+        gameStateManager: GameStateManager,
+        buildingRegistry: BuildingRegistry
+    ) {
+        super(node, edges, allNodes, allEdges, gameStateManager, buildingRegistry);
+    }
     phaseProduce(): void {
         // No direct production
     }

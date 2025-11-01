@@ -25,6 +25,9 @@ import { ResourceInventoryService } from './services/ResourceInventoryService';
 import { NodeValidationService } from './services/NodeValidationService';
 import { TickProcessor } from './simulation/TickProcessor';
 import { SaveLoadService } from './services/SaveLoadService';
+import { GameStateManager } from './managers/GameStateManager';
+import { BuildingRegistry } from './managers/BuildingRegistry';
+import { StateSyncService } from './services/StateSyncService';
 
 /**
  * ViewportInitializer component - sets initial camera position to map center
@@ -81,6 +84,11 @@ export default function App() {
   const [menuState, setMenuState] = useState<MenuState>('closed');
   const [loadedResourceFields, setLoadedResourceFields] = useState<any[] | undefined>(undefined);
   const [isPaused, setIsPaused] = useState(false);
+
+  // Initialize new state management system
+  const [gameStateManager] = useState(() => new GameStateManager());
+  const [buildingRegistry] = useState(() => new BuildingRegistry(gameStateManager));
+  const [stateSyncService] = useState(() => new StateSyncService(gameStateManager));
 
   // IMPORTANT: React hooks must be called at the component level, never inside callbacks or conditional blocks
   // This follows the Rules of Hooks - hooks can only be called at the top level of React components
@@ -144,11 +152,17 @@ export default function App() {
   useEffect(() => {
     if (!isPaused) {
       const interval = setInterval(() => {
-        setNodes((prevNodes) => TickProcessor.processTick(prevNodes, edges, resourceFields, resourceInventory));
+        TickProcessor.processTick(buildingRegistry, edges, allNodes);
+        // Update only building nodes, preserve resource nodes and map border
+        setNodes(currentNodes => {
+          const updatedBuildingNodes = stateSyncService.gameStateToNodes();
+          const nonBuildingNodes = currentNodes.filter(node => node.type !== 'building');
+          return [...nonBuildingNodes, ...updatedBuildingNodes];
+        });
       }, 1000);
       return () => clearInterval(interval);
     }
-  }, [edges, resourceFields, resourceInventory, isPaused]);
+  }, [buildingRegistry, edges, allNodes, stateSyncService, isPaused]);
 
   const onNodesChangeWrapper = useCallback(
     (changes: NodeChange[]) => {
@@ -158,8 +172,20 @@ export default function App() {
         allNodes
       );
       onNodesChange(filteredChanges);
+
+      // Sync position changes back to game state
+      const hasPositionChanges = changes.some(change =>
+        change.type === 'position' && change.dragging
+      );
+      if (hasPositionChanges) {
+        // Get the updated nodes after the change
+        setNodes(currentNodes => {
+          stateSyncService.updateFromNodes(currentNodes);
+          return currentNodes;
+        });
+      }
     },
-    [resourceFields, allNodes, onNodesChange],
+    [resourceFields, allNodes, onNodesChange, stateSyncService],
   );
 
   const onConnect = useCallback(
@@ -167,10 +193,29 @@ export default function App() {
     [],
   );
 
-  const handleBuildingPlaced = useCallback((newNode: Node) => {
+  const handleBuildingPlaced = useCallback(async (newNode: Node) => {
+    // Create building instance and register it
+    const buildingInstance = await buildingRegistry.createBuildingInstance(
+      newNode,
+      edges,
+      allNodes,
+      edges, // Use the edges state directly
+      resourceFields,
+      resourceInventory
+    );
+
+    if (buildingInstance) {
+      buildingRegistry.register(buildingInstance);
+
+      // Update the building state with the correct position
+      gameStateManager.updateBuilding(newNode.id, {
+        position: newNode.position
+      });
+    }
+
     setNodes((nds) => [...nds, newNode]);
     clearSelection(); // Clear selection after placement
-  }, [clearSelection]);
+  }, [buildingRegistry, edges, allNodes, resourceFields, gameStateManager, clearSelection]);
 
   // Menu handlers
   const handleSaveGame = useCallback((slotIndex: number) => {
@@ -223,7 +268,8 @@ export default function App() {
 
       // Trigger a manual tick to ensure production works immediately after loading
       setTimeout(() => {
-        setNodes((currentNodes) => TickProcessor.processTick(currentNodes, gameState.edges, gameState.resourceFields, resourceInventory));
+        TickProcessor.processTick(buildingRegistry, gameState.edges, gameState.nodes);
+        setNodes(stateSyncService.gameStateToNodes());
       }, 100);
 
       showToast(`Game loaded from slot ${slotIndex + 1}`);

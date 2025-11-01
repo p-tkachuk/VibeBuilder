@@ -1,77 +1,52 @@
 import type { Node, Edge } from '@xyflow/react';
-import { BuildingType, BuildingSpecialty, BUILDING_CONFIGS } from '../types/buildings';
-import type { ResourceField } from '../types/terrain';
-import { ResourceInventoryService } from '../services/ResourceInventoryService';
+import { BuildingSpecialty } from '../types/buildings';
 import { BaseBuilding } from './buildings/BaseBuilding';
-import { Miner } from './buildings/Miner';
-import { Factory } from './buildings/Factory';
-import { Utility } from './buildings/Utility';
-import { Storage } from './buildings/Storage';
-import { PowerPlant } from './buildings/PowerPlant';
+import { BuildingRegistry } from '../managers/BuildingRegistry';
 
 export class TickProcessor {
-    static processTick(nodes: Node[], edges: Edge[], resourceFields: ResourceField[], resourceInventory?: ResourceInventoryService): Node[] {
-        // Each tick, we temporarily create building instances, process their logic, and update the nodes
-        // This ensures that building logic is driven by the immutable node state
-        // Node creation/update performance is acceptable for typical game configurations
+    static processTick(buildingRegistry: BuildingRegistry, edges: Edge[], nodes: Node[]): void {
+        const buildings = buildingRegistry.getAll();
 
-        const buildings: Record<string, BaseBuilding> = {};
-
-        // Instantiate building objects for processing this tick
-        nodes.forEach(node => {
-            if (node.type === 'building') {
-                const building = this.createBuilding(node, edges, nodes, edges, resourceFields, resourceInventory);
-                if (building) {
-                    buildings[node.id] = building;
-                }
-            }
+        // Update buildings with current edges and nodes for connection detection
+        buildings.forEach(building => {
+            // Update the building's edge/node references (we'll need to add methods for this)
+            building.updateConnections(edges, nodes);
         });
 
-        // Establish supplier relationships after instantiation
-        Object.values(buildings).forEach(building => {
-            building.setSuppliers(buildings);
+        // Establish supplier relationships
+        const buildingsMap: Record<string, BaseBuilding> = {};
+        buildings.forEach(building => {
+            buildingsMap[building.id] = building;
             building.resetEnergyShortage();
         });
 
-        // Process in separate phases: produce, pull, consume-produce
-        Object.values(buildings).filter(b => b.specialty === BuildingSpecialty.POWER_PLANT).forEach(building => building.phasePull());
-        Object.values(buildings).filter(b => b.specialty === BuildingSpecialty.POWER_PLANT).forEach(building => building.phaseConsumeAndProduce());
-
-        Object.values(buildings).filter(b => b.specialty === BuildingSpecialty.MINER).forEach(building => building.phaseProduce());
-        Object.values(buildings).filter(b => b.specialty !== BuildingSpecialty.POWER_PLANT).forEach(building => building.phasePull());
-        Object.values(buildings).filter(b => b.specialty === BuildingSpecialty.FACTORY || b.specialty === BuildingSpecialty.UTILITY).forEach(building => building.phaseConsumeAndProduce());
-
-        // Update nodes with the processed inventory states
-        return nodes.map(node => {
-            if (node.type === 'building' && buildings[node.id]) {
-                return buildings[node.id].getUpdatedNode();
-            }
-            return node;
+        Object.values(buildings).forEach(building => {
+            building.setSuppliers(buildingsMap);
         });
-    }
 
-    private static createBuilding(node: Node, edges: Edge[], allNodes: Node[], allEdges: Edge[], resourceFields: ResourceField[], resourceInventory?: ResourceInventoryService): BaseBuilding {
-        const buildingType = node.data.buildingType as BuildingType;
-        if (!buildingType) throw new Error(`Invalid building type for node ${node.id}`);
+        // Process in separate phases: produce, pull, consume-produce
+        buildings.filter(b => b.specialty === BuildingSpecialty.POWER_PLANT).forEach(building => {
+            building.phasePull();
+            building.getUpdatedNode(); // Sync state after phase
+        });
+        buildings.filter(b => b.specialty === BuildingSpecialty.POWER_PLANT).forEach(building => {
+            building.phaseConsumeAndProduce();
+            building.getUpdatedNode(); // Sync state after phase
+        });
 
-        const config = BUILDING_CONFIGS[buildingType];
-        if (!config) throw new Error(`Unknown building type ${buildingType} for node ${node.id}`);
+        buildings.filter(b => b.specialty === BuildingSpecialty.MINER).forEach(building => {
+            building.phaseProduce();
+            building.getUpdatedNode(); // Sync state after phase
+        });
+        buildings.filter(b => b.specialty !== BuildingSpecialty.POWER_PLANT).forEach(building => {
+            building.phasePull();
+            building.getUpdatedNode(); // Sync state after phase
+        });
+        buildings.filter(b => b.specialty === BuildingSpecialty.FACTORY || b.specialty === BuildingSpecialty.UTILITY).forEach(building => {
+            building.phaseConsumeAndProduce();
+            building.getUpdatedNode(); // Sync state after phase
+        });
 
-        const specialty = config.specialty;
-
-        switch (specialty) {
-            case BuildingSpecialty.MINER:
-                return new Miner(node, edges, allNodes, allEdges, resourceFields);
-            case BuildingSpecialty.FACTORY:
-                return new Factory(node, edges, allNodes, allEdges);
-            case BuildingSpecialty.UTILITY:
-                return new Utility(node, edges, allNodes, allEdges);
-            case BuildingSpecialty.STORAGE:
-                return new Storage(node, edges, allNodes, allEdges);
-            case BuildingSpecialty.POWER_PLANT:
-                return new PowerPlant(node, edges, allNodes, allEdges, resourceInventory);
-            default:
-                throw new Error(`Unsupported building specialty ${specialty} for node ${node.id}`);
-        }
+        // State is updated through registry - no return value needed
     }
 }
