@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { Node } from '@xyflow/react';
 import { ResourceFieldService } from '../services/ResourceFieldService';
 import { isPositionInResourceField } from '../utils/position.utils';
@@ -9,10 +9,17 @@ import { ResourceType } from '../types/terrain';
  * Custom hook for managing resource fields
  * Follows Single Responsibility Principle - only handles resource field state and operations
  */
-export const useResourceFields = () => {
-    const [resourceFields] = useState<ResourceField[]>(() =>
-        ResourceFieldService.generateResourceFields()
+export const useResourceFields = (initialResourceFields?: ResourceField[]) => {
+    const [resourceFields, setResourceFields] = useState<ResourceField[]>(() =>
+        initialResourceFields || ResourceFieldService.generateResourceFields()
     );
+
+    // Update resource fields when initialResourceFields changes (for loading saved games)
+    useEffect(() => {
+        if (initialResourceFields) {
+            setResourceFields(initialResourceFields);
+        }
+    }, [initialResourceFields]);
 
     // Convert resource fields to React Flow nodes
     const resourceNodes: Node[] = useMemo(() => {

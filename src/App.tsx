@@ -9,16 +9,21 @@ import { TerrainOverlay } from './components/TerrainOverlay';
 import { BuildingPlacementHandler } from './components/BuildingPlacementHandler';
 import { ResourcePanel } from './components/ResourcePanel';
 import { Minimap } from './components/Minimap';
+import { GameMenu } from './components/GameMenu';
+import { SaveMenu } from './components/SaveMenu';
+import { LoadMenu } from './components/LoadMenu';
 import { BuildingType } from './types/buildings';
 import { Toast } from './components/Toast';
 import { useResourceFields } from './hooks/useResourceFields';
 import { useBuildingPlacement } from './hooks/useBuildingPlacement';
 import { useKeyboardActions } from './hooks/useKeyboardActions';
+import type { MenuState } from './hooks/useKeyboardActions';
 import { COLORS, EDGE_OPTIONS } from './constants/game.constants';
 import { GAME_CONFIG } from './config/game.config';
 import { ResourceInventoryService } from './services/ResourceInventoryService';
 import { NodeValidationService } from './services/NodeValidationService';
 import { TickProcessor } from './simulation/TickProcessor';
+import { SaveLoadService } from './services/SaveLoadService';
 
 /**
  * ViewportInitializer component - sets initial camera position to map center
@@ -72,9 +77,16 @@ export default function App() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [resourceInventory] = useState(() => new ResourceInventoryService());
   const [inventoryChangeCount, setInventoryChangeCount] = useState(0);
+  const [menuState, setMenuState] = useState<MenuState>('closed');
+  const [loadedResourceFields, setLoadedResourceFields] = useState<any[] | undefined>(undefined);
+
+  // IMPORTANT: React hooks must be called at the component level, never inside callbacks or conditional blocks
+  // This follows the Rules of Hooks - hooks can only be called at the top level of React components
+  // We get the viewport functions here and use them in callbacks below
+  const { getViewport, setViewport } = useReactFlow();
 
   // Use custom hooks for separation of concerns
-  const { resourceNodes, resourceFields } = useResourceFields();
+  const { resourceNodes, resourceFields } = useResourceFields(loadedResourceFields);
   const {
     selectedBuildingType,
     handleBuildingSelect,
@@ -95,7 +107,7 @@ export default function App() {
   }, [setNodes, setEdges, resourceInventory]);
 
   // Handle keyboard actions
-  useKeyboardActions(selectedBuildingType, clearSelection, handleDeleteSelected);
+  useKeyboardActions(selectedBuildingType, clearSelection, handleDeleteSelected, menuState, setMenuState);
 
   const showToast = useCallback((message: string) => {
     setToastMessage(message);
@@ -155,6 +167,67 @@ export default function App() {
     setNodes((nds) => [...nds, newNode]);
     clearSelection(); // Clear selection after placement
   }, [clearSelection]);
+
+  // Menu handlers
+  const handleSaveGame = useCallback((slotIndex: number) => {
+    const viewport = getViewport();
+    const success = SaveLoadService.saveGame(slotIndex, nodes, edges, resourceInventory, viewport, resourceFields);
+    if (success) {
+      showToast(`Game saved to slot ${slotIndex + 1}`);
+      setMenuState('closed');
+    } else {
+      showToast('Failed to save game');
+    }
+  }, [getViewport, nodes, edges, resourceInventory, resourceFields, showToast]);
+
+  const handleLoadGame = useCallback((slotIndex: number) => {
+    const gameState = SaveLoadService.loadGame(slotIndex);
+    if (gameState) {
+      // Restore resource fields first (this will update the hook)
+      setLoadedResourceFields(gameState.resourceFields);
+
+      // Restore game state
+      setNodes(gameState.nodes);
+      setEdges(gameState.edges);
+
+      // Restore viewport/camera position
+      setViewport(gameState.viewport);
+
+      // Restore resource inventory
+      // Clear current inventory and set new values
+      const currentInventory = resourceInventory.getInventory();
+      Object.keys(currentInventory).forEach(resource => {
+        // This is a bit hacky, but we need to reset the inventory
+        // We'll remove all resources first
+        resourceInventory.removeResources({ [resource]: currentInventory[resource] });
+      });
+
+      // Add the saved resources
+      Object.entries(gameState.resourceInventory.inventory).forEach(([resource, amount]) => {
+        resourceInventory.addResource(resource, amount);
+      });
+
+      // Set storage capacity
+      const currentCapacity = resourceInventory.getStorageCapacity();
+      if (gameState.resourceInventory.storageCapacity > currentCapacity) {
+        resourceInventory.increaseStorageCapacity(gameState.resourceInventory.storageCapacity - currentCapacity);
+      } else if (gameState.resourceInventory.storageCapacity < currentCapacity) {
+        resourceInventory.decreaseStorageCapacity(currentCapacity - gameState.resourceInventory.storageCapacity);
+      }
+
+      setInventoryChangeCount(prev => prev + 1);
+
+      // Trigger a manual tick to ensure production works immediately after loading
+      setTimeout(() => {
+        setNodes((currentNodes) => TickProcessor.processTick(currentNodes, gameState.edges, gameState.resourceFields, resourceInventory));
+      }, 100);
+
+      showToast(`Game loaded from slot ${slotIndex + 1}`);
+      setMenuState('closed');
+    } else {
+      showToast('Failed to load game');
+    }
+  }, [setLoadedResourceFields, setViewport, setNodes, setEdges, resourceInventory, setInventoryChangeCount, showToast]);
 
   // Calculate translate extent to restrict camera movement to map boundaries
   const translateExtent = useMemo(() => {
@@ -244,6 +317,27 @@ export default function App() {
         </ReactFlow>
       </div>
       {toastMessage && <Toast message={toastMessage} onClose={hideToast} />}
+
+      {/* Game Menus */}
+      {menuState === 'main' && (
+        <GameMenu
+          onSave={() => setMenuState('save')}
+          onLoad={() => setMenuState('load')}
+          onClose={() => setMenuState('closed')}
+        />
+      )}
+      {menuState === 'save' && (
+        <SaveMenu
+          onSave={handleSaveGame}
+          onBack={() => setMenuState('main')}
+        />
+      )}
+      {menuState === 'load' && (
+        <LoadMenu
+          onLoad={handleLoadGame}
+          onBack={() => setMenuState('main')}
+        />
+      )}
     </div>
   );
 }
