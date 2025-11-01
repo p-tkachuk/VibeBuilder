@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useRef, useEffect } from 'react';
 import { useReactFlow } from '@xyflow/react';
 import { GAME_CONFIG } from '../config/game.config';
 import type { ResourceField } from '../types/terrain';
@@ -6,26 +6,52 @@ import type { ResourceField } from '../types/terrain';
 /**
  * Minimap component - displays a small overview of the entire map
  * Shows resource fields and current camera position, allows navigation by clicking
+ * Optimized for real-time updates with minimal lag
  */
 interface MinimapProps {
   resourceFields: ResourceField[];
 }
 
-export const Minimap: React.FC<MinimapProps> = ({ resourceFields }) => {
-  const { getViewport, setViewport, getNodes } = useReactFlow();
+export const Minimap: React.FC<MinimapProps> = React.memo(({ resourceFields }) => {
+  const { getViewport, setViewport } = useReactFlow();
 
   const minimapSize = 200; // Size of the minimap in pixels
   const scale = minimapSize / Math.max(GAME_CONFIG.mapWidth, GAME_CONFIG.mapHeight);
 
-  // Get current viewport bounds
-  const viewport = getViewport();
+  // Throttled viewport state to reduce update frequency
+  const [throttledViewport, setThrottledViewport] = React.useState({ x: 0, y: 0, zoom: 1 });
+  const throttledViewportRef = useRef(throttledViewport);
+
+  // Throttle viewport updates to reduce re-renders
+  useEffect(() => {
+    let rafId: number;
+    let lastUpdate = 0;
+
+    const updateViewport = (timestamp: number) => {
+      if (timestamp - lastUpdate >= 16) { // ~60fps
+        const newViewport = getViewport();
+        if (newViewport.x !== throttledViewportRef.current.x ||
+            newViewport.y !== throttledViewportRef.current.y ||
+            newViewport.zoom !== throttledViewportRef.current.zoom) {
+          setThrottledViewport(newViewport);
+          throttledViewportRef.current = newViewport;
+        }
+        lastUpdate = timestamp;
+      }
+      rafId = requestAnimationFrame(updateViewport);
+    };
+
+    rafId = requestAnimationFrame(updateViewport);
+
+    return () => cancelAnimationFrame(rafId);
+  }, [getViewport]);
+
+  // Get current viewport bounds - memoized for performance
   const viewportBounds = useMemo(() => {
-    const zoom = viewport.zoom;
+    const zoom = throttledViewport.zoom;
     // Calculate the world coordinates of the visible area
-    // Top-left world coordinate: (0 - viewport.x) / zoom
-    // Bottom-right world coordinate: (screenSize - viewport.x) / zoom
-    const worldX = (0 - viewport.x) / zoom;
-    const worldY = (0 - viewport.y) / zoom;
+    const worldX = (0 - throttledViewport.x) / zoom;
+    const worldY = (0 - throttledViewport.y) / zoom;
     const viewportWidth = window.innerWidth / zoom;
     const viewportHeight = window.innerHeight / zoom;
 
@@ -35,7 +61,7 @@ export const Minimap: React.FC<MinimapProps> = ({ resourceFields }) => {
       width: viewportWidth,
       height: viewportHeight,
     };
-  }, [viewport]);
+  }, [throttledViewport]);
 
   // Handle minimap click to move camera
   const handleMinimapClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
@@ -48,17 +74,16 @@ export const Minimap: React.FC<MinimapProps> = ({ resourceFields }) => {
     let worldY = clickY / scale;
 
     // Clamp the target position to stay within map boundaries
-    // The center of the camera should not go outside the build area
     worldX = Math.max(0, Math.min(GAME_CONFIG.mapWidth, worldX));
     worldY = Math.max(0, Math.min(GAME_CONFIG.mapHeight, worldY));
 
     // Center the viewport on the clicked (clamped) position
     setViewport({
-      x: -worldX * viewport.zoom + window.innerWidth / 2,
-      y: -worldY * viewport.zoom + window.innerHeight / 2,
-      zoom: viewport.zoom,
+      x: -worldX * throttledViewport.zoom + window.innerWidth / 2,
+      y: -worldY * throttledViewport.zoom + window.innerHeight / 2,
+      zoom: throttledViewport.zoom,
     });
-  }, [scale, viewport.zoom, setViewport]);
+  }, [scale, throttledViewport.zoom, setViewport]);
 
   // Get resource field colors
   const getResourceColor = (type: string) => {
@@ -134,4 +159,4 @@ export const Minimap: React.FC<MinimapProps> = ({ resourceFields }) => {
       />
     </div>
   );
-};
+});
