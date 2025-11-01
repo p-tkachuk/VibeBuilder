@@ -1,73 +1,148 @@
-# React + TypeScript + Vite
+# Atata
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A factory automation game built with React, TypeScript, and ReactFlow. Build and manage complex production chains, mine resources, process materials, and optimize your industrial empire.
 
-Currently, two official plugins are available:
+![Game Screenshot](./screenshot.png)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🎮 Game Features
 
-## React Compiler
+### Resource Management
+- **Mining Operations**: Extract iron ore, coal, copper ore, and stone from resource nodes
+- **Processing Chains**: Transform raw materials into refined products through smelters and assemblers
+- **Storage Systems**: Store resources in dedicated storage buildings with configurable capacity
+- **Inventory Management**: Track resources across all buildings and storage facilities
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Building Types
+- **Miners**: Extract resources from resource fields (Copper, Coal, Iron, Stone)
+- **Smelters**: Process ores into plates (Iron Smelter, Copper Smelter, Steel Furnace)
+- **Assemblers**: Create components from processed materials (Iron Gear, Steel Gear)
+- **Utilities**: Item splitters for distribution and routing
+- **Power Plants**: Coal-powered energy generation
+- **Storage**: Dedicated resource storage facilities
 
-## Expanding the ESLint configuration
+### Gameplay Mechanics
+- **Node-Based Construction**: Place and connect buildings using an intuitive drag-and-drop interface
+- **Real-Time Simulation**: Automated production cycles with 1-second tick intervals
+- **Resource Flow**: Connect buildings to create automated production chains
+- **Power Management**: Buildings consume energy for operation
+- **Terrain System**: Procedurally generated resource fields with varying richness
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🚀 Getting Started
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Prerequisites
+- Node.js (v16 or higher)
+- npm or yarn
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Installation
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1. Clone the repository:
+```bash
+git clone https://github.com/p-tkachuk/atata.git
+cd atata
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+2. Install dependencies:
+```bash
+npm install
 ```
+
+3. Start the development server:
+```bash
+npm run dev
+```
+
+4. Open your browser and navigate to `http://localhost:5173`
+
+### Build for Production
+
+```bash
+npm run build
+npm run preview
+```
+
+## 🎯 How to Play
+
+1. **Start Mining**: Click on resource nodes to manually extract materials and build your initial stockpile
+2. **Place Buildings**: Select a building type from the menu and click on the terrain to place it
+3. **Connect Production**: Drag connections between buildings to create automated production chains
+4. **Manage Resources**: Monitor your inventory and storage capacity in the resource panel
+5. **Expand**: Build more complex production chains and optimize your factory layout
+
+### Building Costs
+- **Miners**: 5 stone each
+- **Smelters**: 10 stone + 5 ore
+- **Assemblers**: 10 stone + 10 iron plates
+- **Storage**: 10 stone each
+- **Power Plant**: 20 stone
+
+## 🏗️ Architecture
+
+### Tech Stack
+- **Frontend**: React 19 with TypeScript
+- **UI Framework**: ReactFlow for node-based interface
+- **Build Tool**: Vite
+- **Styling**: CSS Modules
+- **State Management**: React hooks with custom state management
+
+### Project Structure
+```
+src/
+├── components/          # React components
+│   ├── BuildingMenu.tsx # Building selection interface
+│   ├── BuildingNode.tsx # Individual building representation
+│   ├── ResourcePanel.tsx# Resource inventory display
+│   └── ...
+├── services/           # Business logic services
+│   ├── BuildingPlacementService.ts
+│   ├── ResourceInventoryService.ts
+│   └── ...
+├── simulation/         # Game simulation engine
+│   ├── TickProcessor.ts
+│   └── buildings/      # Building behavior implementations
+├── hooks/             # Custom React hooks
+├── types/             # TypeScript type definitions
+├── config/            # Game configuration
+└── utils/             # Utility functions
+```
+
+### Key Concepts
+- **Tick-Based Simulation**: Game state updates every second
+- **Node Validation**: Ensures buildings are placed on valid terrain
+- **Resource Flow**: Materials move through connected production chains
+- **Dependency Injection**: Services are injected into components for testability
+
+## 🛠️ Development
+
+### Available Scripts
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run lint` - Run ESLint
+- `npm run preview` - Preview production build
+
+### Code Quality
+- TypeScript for type safety
+- ESLint for code linting
+- Modular architecture with separation of concerns
+- Comprehensive error handling
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Inspired by factory automation games like Factorio
+- Built with [ReactFlow](https://reactflow.dev/) for the node-based interface
+- Uses [Vite](https://vitejs.dev/) for fast development and building
+
+## 🤖 Development Note
+
+This game was fully coded using vibe coding with various AI agents, including assistance from Cline, a highly skilled software engineer AI that helped architect and implement the complex factory simulation system.
