@@ -232,9 +232,14 @@ export default function App() {
     }
   }, [getViewport, nodes, edges, resourceInventory, resourceFields, showToast]);
 
-  const handleLoadGame = useCallback((slotIndex: number) => {
+  const handleLoadGame = useCallback(async (slotIndex: number) => {
     const gameState = SaveLoadService.loadGame(slotIndex);
     if (gameState) {
+      // Clear existing building registry and game state manager
+      buildingRegistry.getAll().forEach(building => {
+        buildingRegistry.unregister(building.id);
+      });
+
       // Restore resource fields first (this will update the hook)
       setLoadedResourceFields(gameState.resourceFields);
 
@@ -269,6 +274,29 @@ export default function App() {
 
       setInventoryChangeCount(prev => prev + 1);
 
+      // Recreate and register building instances from loaded nodes
+      const buildingNodes = gameState.nodes.filter(node => node.type === 'building');
+      for (const node of buildingNodes) {
+        const buildingInstance = await buildingRegistry.createBuildingInstance(
+          node,
+          gameState.edges,
+          gameState.nodes,
+          gameState.edges,
+          gameState.resourceFields,
+          resourceInventory
+        );
+
+        if (buildingInstance) {
+          buildingRegistry.register(buildingInstance);
+
+          // Update the building state with the correct position
+          gameStateManager.updateBuilding(node.id, {
+            position: node.position,
+            inventory: node.data.inventory || ({} as Record<string, number>)
+          });
+        }
+      }
+
       // Trigger a manual tick to ensure production works immediately after loading
       setTimeout(() => {
         TickProcessor.processTick(buildingRegistry, gameState.edges, gameState.nodes);
@@ -280,7 +308,7 @@ export default function App() {
     } else {
       showToast('Failed to load game');
     }
-  }, [setLoadedResourceFields, setViewport, setNodes, setEdges, resourceInventory, setInventoryChangeCount, showToast]);
+  }, [setLoadedResourceFields, setViewport, setNodes, setEdges, resourceInventory, setInventoryChangeCount, buildingRegistry, gameStateManager, stateSyncService, showToast]);
 
   // Calculate translate extent to restrict camera movement to map boundaries
   const translateExtent = useMemo(() => {
